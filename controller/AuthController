@@ -1,0 +1,13 @@
+from controller.BaseController import BaseController
+
+
+class AuthController(BaseController):
+
+    def __init__(self):
+        super().__init__()
+        self._prefix = "auth"
+
+
+
+    def get_login(self):
+        pass
