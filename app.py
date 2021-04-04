@@ -1,6 +1,7 @@
-from flask import Flask
+from common.ChatServer import ChatServer
 
-
-app = Flask(__name__)
 if __name__ == "__main__":
-    app.run(debug=True)
+    chatServer = ChatServer()
+    chatServer.run()
+
+
