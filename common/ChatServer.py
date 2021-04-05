@@ -12,11 +12,31 @@ import ctypes
 
 class ChatServer():
     def __init__(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # memory storage
         self.loggedInUsers = dict()
-        self.loggedInUserThreads = dict()
-        self.shortConnectionHandler = ShortConnectionHandler(self.loggedInUsers)
+        self.chatGroupId2username = dict()
+        self.username2chatGroupId = dict()
+        self.history_message = dict()
+
+        # infrastructure
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.connectionQueue = Queue(maxsize=100)
+        self.loggedInUserThreads = dict()
+        self.longConnectionHandler = LongConnectionHandler(
+            self.chatGroupId2username,
+            self.username2chatGroupId,
+            self.history_message
+        )
+        self.shortConnectionHandler = ShortConnectionHandler(
+            self.loggedInUsers,
+            self.loggedInUserThreads,
+            self.longConnectionHandler
+        )
+
+
+
+
+
 
     def turnDownConnection(self,conn,msg=""):
         response = Response()
@@ -26,28 +46,6 @@ class ChatServer():
         }
         response.sendAjax(conn)
         conn.close()
-
-    def login(self,conn,request):
-        data = request.data
-        username = data["username"]
-        if username in self.loggedInUsers:
-            self.turnDownConnection(conn,msg="username already exists")
-            return
-
-        avatar_id = data["avatar_id"]
-        user = User(
-            name=username,
-            avatar_id=avatar_id,
-            conn=conn,
-            lastContactTime=time.time()
-        )
-        self.loggedInUsers[username] = user
-        longConnectionHandler = LongConnectionHandler()
-        thread = threading.Thread(target=longConnectionHandler.handle,args=(user,))
-        self.loggedInUserThreads[username] = thread
-        thread.start()
-
-
 
     def handleShortConnection(self):
         while True:
@@ -87,11 +85,12 @@ class ChatServer():
                     killSet.append(username)
 
             for username in killSet:
-                thread = self.loggedInUserThreads.pop(username)
-                conn = self.loggedInUsers.pop(username).conn
-                self.killThread(thread)
-                conn.close()
-                print(f"Killed dead user: {username}")
+                if username in self.loggedInUserThreads:
+                    thread = self.loggedInUserThreads.pop(username)
+                    conn = self.loggedInUsers.pop(username).conn
+                    self.killThread(thread)
+                    conn.close()
+                    print(f"Killed dead user: {username}")
             time.sleep(10)
 
 

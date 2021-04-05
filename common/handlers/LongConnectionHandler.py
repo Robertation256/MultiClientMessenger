@@ -1,13 +1,20 @@
-from config import Config
 from common.templates.Request import Request
 from common.templates.Response import Response
 
 class LongConnectionHandler:
 
-    def __init__(self):
+    def __init__(self,
+                 chatGroupId2username,
+                 username2chatGroupId,
+                 history_message
+    ):
+        self.chatGroupId2username = chatGroupId2username
+        self.username2chatGroupId = username2chatGroupId
+        self.history_message = history_message
         self.mapping = {
-            "GET/refresh": self.handle_refresh,
-            "GET/chatroom": self.handle_get_chatroom
+            "GET/refresh": self._handle_refresh,
+            "GET/join": self._handle_join,
+            "GET/send_message": self._handle_send_message
         }
 
     def dispatch(self, request, conn):
@@ -19,18 +26,15 @@ class LongConnectionHandler:
         else:
             handlingFunc(request, conn)
 
-    def handle_get_chatroom(self,request,conn):
-        with open(Config.TEMPLATE_PATH+"\\chatroom.html","r") as fp:
-            data = fp.read()
-        response = Response()
-        response.data = data
-        response.sendHTML(conn)
 
-    def handle_refresh(self,request,conn):
+    def _handle_refresh(self,request,conn):
         pass
 
+    def _handle_join(self,request,conn):
+        pass
 
-
+    def _handle_send_message(self,request,conn):
+        pass
 
     def _handle_default(self,request,conn):
         rt = Response()

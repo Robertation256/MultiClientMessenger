@@ -13,7 +13,6 @@ class Request():
         self.path = None
         self.httpVersion = None
         self.data = None
-        self.session = None
 
 
 

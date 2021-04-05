@@ -17,13 +17,19 @@ class Response():
     def _formulateResponse(self):
         self.headers["Content-Length"] = str(len(self.data))
         response = f"{self.httpVersion} {self.statusCode}\r\n"
+
         for k,v in self.headers.items():
             response += f"{k}: {v}\r\n"
         response += "\r\n"
-        if len(self.data) > 0:
-            response += self.data
+        response = response.encode("UTF-8")
 
-        return response.encode("UTF-8")
+        if len(self.data) > 0:
+            if self.headers.get("Content-Type") is not None and "image" in self.headers.get("Content-Type"):
+                response += self.data
+            else:
+                response += self.data.encode("UTF-8")
+
+        return response
 
     def setSession(self,string):
         byteArray = self._crypto.encrypt(string)
@@ -51,3 +57,20 @@ class Response():
         self.headers["Location"] = location
         byteStream = self._formulateResponse()
         conn.send(byteStream)
+
+    def sendJS(self,conn):
+        self.headers["Content-Type"] = "application/javascript; charset=utf-8"
+        byteStream = self._formulateResponse()
+        conn.send(byteStream)
+
+    def sendCSS(self,conn):
+        self.headers["Content-Type"] = "text/css; charset=utf-8"
+        byteStream = self._formulateResponse()
+        conn.send(byteStream)
+
+    def sendImage(self,conn,image_type):
+        self.headers["Content-Type"] = f"image/{image_type}"
+        byteStream = self._formulateResponse()
+        conn.send(byteStream)
+
+
