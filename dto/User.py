@@ -1,6 +1,7 @@
 '''
 A prototype for logged-in users
 '''
+from config import *
 import time
 
 class User:
@@ -17,4 +18,4 @@ class User:
         By default, a client should send refresh request every 2 sec
         :return:
         '''
-        return time.time()-self.lastContactTime <= 2
+        return time.time()-self.lastContactTime <= USER_TIMEOUT

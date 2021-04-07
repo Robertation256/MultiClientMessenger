@@ -2,7 +2,7 @@ from common.handlers.ShortConnectionHandler import ShortConnectionHandler
 from common.handlers.LongConnectionHandler import LongConnectionHandler
 from common.templates.Request import Request
 from common.templates.Response import Response
-from dto.User import User
+from config import *
 import socket
 import threading
 from multiprocessing import Queue
@@ -20,17 +20,20 @@ class ChatServer():
 
         # infrastructure
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.setblocking(False)
         self.connectionQueue = Queue(maxsize=100)
-        self.loggedInUserThreads = dict()
+        # self.loggedInUserThreads = dict()
         self.longConnectionHandler = LongConnectionHandler(
+            self.loggedInUsers,
             self.chatGroupId2username,
             self.username2chatGroupId,
             self.history_message
         )
         self.shortConnectionHandler = ShortConnectionHandler(
             self.loggedInUsers,
-            self.loggedInUserThreads,
-            self.longConnectionHandler
+            self.longConnectionHandler,
+            self.chatGroupId2username,
+            self.username2chatGroupId,
         )
 
 
@@ -47,80 +50,72 @@ class ChatServer():
         response.sendAjax(conn)
         conn.close()
 
-    def handleShortConnection(self):
-        while True:
-            if not self.connectionQueue.empty():
-
-                conn = self.connectionQueue.get(block=True)
-                data = conn.recv(1024)
-                request = Request.getRequest(data)
-                print(f"[Short connection handler] {request.method} {request.path}")
-
-                res = self.shortConnectionHandler.handle(conn,request)
-
-                if res:
-                    self.login(conn,request)
-                    res.sendRedirect(conn, location="/chatroom")
-
-
-
-    def killThread(self,thread):
-        tid = thread.ident
-        """raises the exception, performs cleanup if needed"""
-        tid = ctypes.c_long(tid)
-        res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(SystemExit))
-        if res == 0:
-            raise ValueError("invalid thread id")
-        elif res != 1:
-            # """if it returns a number greater than one, you're in trouble,
-            # and you should call it again with exc=NULL to revert the effect"""
-            ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
-            raise SystemError("PyThreadState_SetAsyncExc failed")
+    # def killThread(self,thread):
+    #     tid = thread.ident
+    #     """raises the exception, performs cleanup if needed"""
+    #     tid = ctypes.c_long(tid)
+    #     res = ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, ctypes.py_object(SystemExit))
+    #     if res == 0:
+    #         raise ValueError("invalid thread id")
+    #     elif res != 1:
+    #         # """if it returns a number greater than one, you're in trouble,
+    #         # and you should call it again with exc=NULL to revert the effect"""
+    #         ctypes.pythonapi.PyThreadState_SetAsyncExc(tid, None)
+    #         raise SystemError("PyThreadState_SetAsyncExc failed")
 
     def killDeadClient(self):
         while True:
             killSet = []
             for username, user in self.loggedInUsers.items():
-                if not user.isAlive():
+                if not user.isAlive() and user.conn is not None:
                     killSet.append(username)
 
             for username in killSet:
-                if username in self.loggedInUserThreads:
-                    thread = self.loggedInUserThreads.pop(username)
+                if username in self.loggedInUsers:
+                    # notice: there is no need to kill the thread here
+                    # the thread will return if connection is down
+
+                    # thread = self.loggedInUserThreads.pop(username)
+                    # self.killThread(thread)
                     conn = self.loggedInUsers.pop(username).conn
-                    self.killThread(thread)
+                    print(f"[Long Connection]: Connection timeout with user {username}\n----------closing connection-----------")
                     conn.close()
-                    print(f"Killed dead user: {username}")
-            time.sleep(10)
 
-
+            time.sleep(DEAD_CLIENT_KILL_CYCLE)
 
 
     def run(self):
         try:
-            self.socket.bind(("localhost",80))
+            self.socket.bind((IP_ADDRESS, PORT_NUMBER))
             self.socket.listen(20)
         except:
             print("[server failed to start]")
             return
 
         #start the connection consumer thread
-        connectionConsumer = threading.Thread(target=self.handleShortConnection)
+        connectionConsumer = threading.Thread(target=self.shortConnectionHandler.handle, args=(self.connectionQueue,))
         connectionConsumer.start()
-
 
         #start the overwatch on dead connections
         deadClientKiller = threading.Thread(target=self.killDeadClient)
         deadClientKiller.start()
 
+        print(f"------------Server started on port {PORT_NUMBER}-----------------")
+
 
         while True:
-            conn, clientAddress = self.socket.accept()
-            if not self.connectionQueue.full():
-                self.connectionQueue.put(conn,block=True)
-            else:
-                self.turnDownConnection(conn)
-                time.sleep(1)
+
+            try:
+                conn, clientAddress = self.socket.accept()
+                conn.setblocking(False)
+                conn.settimeout(1)
+                if not self.connectionQueue.full():
+                    self.connectionQueue.put(conn)
+                else:
+                    self.turnDownConnection(conn)
+            except OSError:
+                time.sleep(0.0001)
+
 
 
 

@@ -21,9 +21,11 @@ class Request():
         if sessionStr is None:
             return None
 
-        base64Encoded = sessionStr.split("=")[1]
-        byteArray = base64.b16decode(base64Encoded)
-        username = self._crypto.decrypt(byteArray)
+        sessionStr = sessionStr.split(";")[0]
+        base64Encoded = sessionStr.split("=")[1:]
+        base64Encoded = "=".join(base64Encoded)
+        byteArray = base64.b64decode(base64Encoded)
+        username = self._crypto.decrypt(byteArray).decode()
         return username
 
 
@@ -75,12 +77,13 @@ class Request():
                         data[k] = v[0]
                 returnInstance.data=data
 
+
         #handle url params
         if returnInstance.path is not None:
             urlSegs = returnInstance.path.split("?")
             if len(urlSegs)>1:
                 params = parse_qs(urlSegs[1])
-                for k, v in params:
+                for k, v in params.items():
                     if len(v) == 1:
                         returnInstance.params[k] = v[0]
                     else:

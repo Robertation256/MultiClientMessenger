@@ -2,13 +2,14 @@ import json
 import base64
 from config import *
 from utils.DESCrypto import DESCrypto
-class Response():
 
+class Response():
 
     def __init__(self):
         self.httpVersion = "HTTP/1.0"
         self.statusCode = "200 OK"
         self.headers = dict()
+        self.headers["Access-Control-Allow-Origin"] = "http://127.0.0.1"
         self.data = ""
 
         self._crypto = DESCrypto(APP_SECRET)
@@ -33,8 +34,8 @@ class Response():
 
     def setSession(self,string):
         byteArray = self._crypto.encrypt(string)
-        encoded = base64.b64encode(byteArray)
-        self.headers["Set-Cookie"] = f"session={encoded}; HttpOnly; Path=/"
+        encoded = base64.b64encode(byteArray).decode()
+        self.headers["Set-Cookie"] = f"session={encoded}; Domain=; Path=/"
 
     def sendHTML(self,conn):
         self.headers["Content-Type"] = "text/html; charset=utf-8"

@@ -1,23 +1,36 @@
 from common.templates.Response import Response
+from common.templates.Request import Request
 from dto.User import User
 import threading
+import time
+import uuid
 from config import *
 
 class ShortConnectionHandler():
-    def __init__(self,loggedInUser,loggedInUserThreads,longConnectionHandler):
+    def __init__(
+            self,
+            loggedInUser,
+            longConnectionHandler,
+            chatGroupId2username,
+            username2chatGroupId
+    ):
         self.loggedInUsers = loggedInUser
-        self.loggedInUserThreads = loggedInUserThreads
         self.longConnectionHandler = longConnectionHandler
+        self.chatGroupId2username = chatGroupId2username
+        self.username2chatGroupId = username2chatGroupId
         self.mapping = {
             "GET/login" : self._handle_get_login,
             "POST/login": self._handle_post_login,
             "GET/chatroom": self._handle_get_chatroom,
             "GET/static": self._handle_get_static,
-            "GET/connect": self._handle_establish_long_connection
+            "GET/connect": self._handle_establish_long_connection,
+            "GET/favicon.ico": self._handle_get_favicon
         }
 
     def _handle_get_login(self,request,conn):
         responseTemplate = Response()
+        if request.getSession() != None:
+            responseTemplate.setSession("")
         with open(TEMPLATE_PATH+"/loginPage.html", "r", encoding="UTF-8") as fp:
             data = fp.read()
         responseTemplate.data = data
@@ -38,11 +51,12 @@ class ShortConnectionHandler():
         user = User(
             name=username,
             avatar_id=avatar_id,
-            conn=conn,
+            conn=None,
         )
         self.loggedInUsers[username] = user
         response.setSession(username)
         response.sendRedirect(conn,location="/chatroom")
+        print("Redirect sent")
 
     def _handle_get_chatroom(self,request,conn):
         with open(TEMPLATE_PATH+"\\chatroom.html","r") as fp:
@@ -50,6 +64,14 @@ class ShortConnectionHandler():
         response = Response()
         response.data = data
         response.sendHTML(conn)
+        print("Chatroom html sent")
+
+    def _handle_get_favicon(self,request,conn):
+        with open(STATIC_FILE_PATH + "/image/favicon.ico", "rb") as fp:
+            file = fp.read()
+        response = Response()
+        response.data = file
+        response.sendImage(conn,image_type="x-icon")
 
     def _handle_get_static(self,request,conn):
         params = request.params
@@ -57,9 +79,8 @@ class ShortConnectionHandler():
             self._handle_default(request,conn)
 
         file_name = params.get("file_name")
-
         try:
-            file_type = file_name.split(".")
+            file_type = file_name.split(".")[1]
             if file_type == "js":
                 with open(STATIC_FILE_PATH+"/js/"+file_name,"r") as fp:
                     file = fp.read()
@@ -74,9 +95,8 @@ class ShortConnectionHandler():
                 response.data = file
                 response.sendCSS(conn)
 
-
             elif file_type in ["jpg",'png','jpeg']:
-                with open(STATIC_FILE_PATH + "/image/" + file_name, "r") as fp:
+                with open(STATIC_FILE_PATH + "/image/" + file_name, "rb") as fp:
                     file = fp.read()
                 response = Response()
                 response.data = file
@@ -89,9 +109,21 @@ class ShortConnectionHandler():
 
     def _handle_establish_long_connection(self,request,conn):
         username = request.getSession()
-        if username in self.loggedInUsers and self.loggedInUsers[username].first_time_request:
-            thread = threading.Thread(target=self.longConnectionHandler.handle,args=(self.loggedInUsers[username],))
-            self.loggedInUserThreads[username] = thread
+        print("Username:",username)
+        if username is None or username not in self.loggedInUsers:
+            self._handle_default(request,conn)
+            return
+
+        user = self.loggedInUsers[username]
+        if user.first_time_request:
+            user.first_time_request = False
+            user.lastContactTime = time.time()
+            chatGroupId = str(uuid.uuid4())
+            self.chatGroupId2username[chatGroupId] = [username]
+            self.username2chatGroupId[username] = chatGroupId
+
+            user.conn = conn
+            thread = threading.Thread(target=self.longConnectionHandler.handle,args=(user,))
             thread.start()
             response = Response()
             response.data = {
@@ -104,16 +136,14 @@ class ShortConnectionHandler():
         else:
             self._handle_default(request,conn)
 
-
     def _handle_default(self,request,conn):
         rt = Response()
         rt.data = "404 not found"
         rt.send404(conn)
 
-    def handle(self,conn,request):
+    def dispatch(self,conn,request):
         path = request.path
         method = request.method
-        print(f"{method}  {path}")
         handlingFunc = self.mapping.get(method+path)
 
         if handlingFunc is None:
@@ -123,6 +153,31 @@ class ShortConnectionHandler():
 
         if res != "Don't close":
             conn.close()
+
+    def handle(self,connection_queue):
+
+        current_conn = None
+        while True:
+            if current_conn == None:
+                if not connection_queue.empty():
+                    current_conn = connection_queue.get()
+                else:
+                    time.sleep(SHORT_CONNECTION_SLEEP_CYCLE)
+                    continue
+
+            try:
+                data = current_conn.recv(1024)
+            except BlockingIOError as e:
+                data = ""
+
+            if len(data) > 0:
+                request = Request.getRequest(data)
+                print(f"[Short Connection] method: {request.method}; path: {request.path}")
+                self.dispatch(current_conn,request)
+                print("[Short Connection] handle finished")
+                current_conn = None
+
+
 
 
 
