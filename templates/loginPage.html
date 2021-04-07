@@ -1,22 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Test</title>
-    <script src="https://code.jquery.com/jquery.js"></script>
+	<link rel="stylesheet" href="/static?file_name=loginStyles.css">
+	<title></title>
 </head>
 <body>
-
-<form action="/login" method="post">
-    <p>Username:</p>
-    <input type="text" name="username">
-    <br/>
-    <p>Avatar id:</p>
-    <input type="number" name="avatar_id">
-    <br/>
-    <button id="test-btn">send</button>
-</form>
-
-
+<div id="divLogin" class="DivLogin">
+	<h3>Login Page</h3>
+	<form action="/login" method="POST">
+		<div>
+			<p>Select an avatar and enter a username:</p>
+		</div>
+		<div style="display: none;">
+			<input type="radio" name="avatar" id="avatar01" checked>
+			<input type="radio" name="avatar" id="avatar02">
+			<input type="radio" name="avatar" id="avatar03">
+		</div>
+		<div>
+			<label for="avatar01">
+				<picture data-avaID="01">
+					<img src="/static?file_name=avatar01.jpg" class="AvatarImg" style="border-style: solid;">
+				</picture>
+			</label>
+			<label for="avatar02">
+				<picture data-avaID="02">
+					<img src="/static?file_name=avatar02.jpg" class="AvatarImg">
+				</picture>
+			</label>
+			<label for="avatar03">
+				<picture data-avaID="03">
+					<img src="/static?file_name=avatar03.jpg" class="AvatarImg">
+				</picture>
+			</label>
+		</div>
+		<div>
+			<input type="text" name="username" placeholder="username">
+			<input type="submit" name="loginrequest" value="login">
+		</div>
+	</form>
+	<div id="divError" class="errorMsg">
+	</div>
+</div>
 </body>
 </html>
+<script src="https://code.jquery.com/jquery-3.6.0.js" 
+integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk=" 
+crossorigin="anonymous"></script>
+<script src="/static?file_name=loginBehaviors.js"></script>
+
+
+
+
