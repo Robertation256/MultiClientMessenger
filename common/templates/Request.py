@@ -1,7 +1,7 @@
 from urllib.parse import parse_qs
 from utils.DESCrypto import DESCrypto
 from config import *
-import base64
+
 
 class Request():
 
@@ -20,13 +20,14 @@ class Request():
         sessionStr = self.headers.get("Cookie")
         if sessionStr is None:
             return None
-
-        sessionStr = sessionStr.split(";")[0]
-        base64Encoded = sessionStr.split("=")[1:]
-        base64Encoded = "=".join(base64Encoded)
-        byteArray = base64.b64decode(base64Encoded)
-        username = self._crypto.decrypt(byteArray).decode()
-        return username
+        try:
+            sessionStr = sessionStr.split(";")[0]
+            base64Encoded = sessionStr.split("=")[1:]
+            base64Encoded = "=".join(base64Encoded)
+            username = self._crypto.decrypt(base64Encoded)
+            return username
+        except:
+            return None
 
 
 
@@ -70,7 +71,7 @@ class Request():
 
         #handle form data
         if "Content-Type" in returnInstance.headers and lineNum < len(httpWords):
-            if returnInstance.headers["Content-Type"].strip(" ") == "application/x-www-form-urlencoded":
+            if "application/x-www-form-urlencoded" in returnInstance.headers["Content-Type"]:
                 data = parse_qs(httpWords[lineNum])
                 for k,v in data.items():
                     if len(v) == 1:

@@ -3,6 +3,9 @@ from common.templates.Response import Response
 from config import *
 import time
 import datetime
+import json
+
+
 class LongConnectionHandler:
 
     def __init__(self,
@@ -20,8 +23,9 @@ class LongConnectionHandler:
             "GET/join": self._handle_join,
             "GET/send_message": self._handle_send_message,
             "GET/login": self._handle_get_login,
-            "GET/connect": self._handle_get_connect,
-            "GET/chatroom": self._handle_get_chatroom
+            "POST/connect": self._handle_post_connect,
+            "GET/chatroom": self._handle_get_chatroom,
+            "GET/static": self._handle_get_static
         }
 
 
@@ -44,15 +48,56 @@ class LongConnectionHandler:
         else:
             handlingFunc(request, user)
 
+    def _handle_default(self,request,user):
+        rt = Response()
+        rt.headers["Connection"] = "Keep-Alive"
+        rt.data = "404 not found"
+        rt.send404(user.conn)
+
+    def _handle_get_static(self,request,user):
+
+        params = request.params
+        if "file_name" not in params:
+            self._handle_default(request,user)
+
+        file_name = params.get("file_name")
+        try:
+            response = Response()
+            response.headers["Connection"] = "Keep-Alive"
+            file_type = file_name.split(".")[1]
+            if file_type == "js":
+                with open(STATIC_FILE_PATH+"/js/"+file_name,"r") as fp:
+                    file = fp.read()
+                response.data = file
+                response.sendJS(user.conn)
+
+            elif file_type == "css":
+                with open(STATIC_FILE_PATH+"/css/"+file_name,"r") as fp:
+                    file = fp.read()
+                response.data = file
+                response.sendCSS(user.conn)
+
+            elif file_type in ["jpg",'png','jpeg']:
+                with open(STATIC_FILE_PATH + "/image/" + file_name, "rb") as fp:
+                    file = fp.read()
+                response.data = file
+                response.sendImage(user.conn,file_type)
+            else:
+                self._handle_default(request,user)
+        except:
+            print(f"[File not found] {file_name}")
+            self._handle_default(request,user)
+
     def _handle_get_chatroom(self,request,user):
         user.lastContactTime = time.time()
         with open(TEMPLATE_PATH+"\\chatroom.html","r") as fp:
             data = fp.read()
         response = Response()
+        response.headers["Connection"] = "Keep-Alive"
         response.data = data
         response.sendHTML(user.conn)
 
-    def _handle_get_connect(self,request,user):
+    def _handle_post_connect(self,request,user):
         user.lastContactTime = time.time()
         response = Response()
         response.data = {
@@ -64,6 +109,7 @@ class LongConnectionHandler:
 
     def _handle_get_login(self,request,user):
         responseTemplate = Response()
+        responseTemplate.headers["Connection"] = "Keep-Alive"
         if request.getSession() != None:
             responseTemplate.setSession("")
         with open(TEMPLATE_PATH + "/loginPage.html", "r", encoding="UTF-8") as fp:
@@ -75,7 +121,6 @@ class LongConnectionHandler:
         return "logout"
 
     def _handle_refresh(self,request,user):
-        print(f"handling refresh for user: {user.name}")
         user.lastContactTime = time.time()
         username = request.getSession()
         if username not in self.username2chatGroupId:
@@ -112,11 +157,12 @@ class LongConnectionHandler:
             "chat_messages": chatMessages
         }
 
+        json_string = json.dumps(result)
+        encrypted_result = user.crypto.encrypt(json_string)
         response = Response()
-        response.data = result
+        response.data = encrypted_result
         response.headers["Connection"] = "Keep-Alive"
         response.sendAjax(user.conn)
-
 
     def _handle_join(self,request,user):
         user.lastContactTime = time.time()
@@ -157,13 +203,25 @@ class LongConnectionHandler:
 
 
     def _handle_send_message(self,request,user):
+        response = Response()
+        response.headers["Connection"] = "Keep-Alive"
         user.lastContactTime = time.time()
         username = request.getSession()
         groupId = self.username2chatGroupId.get(username)
-        message = request.data.get("message")
+        try:
+            message = request.data["message"]
+            message = user.crypto.decrypt(message)
+        except:
+            response.data = {
+                "status":0,
+                "msg": "message send failed. Bad message."
+            }
+            response.sendAjax(user.conn)
+            return
+
 
         # todo: this part right now is nasty, add more error handling later
-        if message != None and groupId is not None and len(self.chatGroupId2username.get(groupId)) > 1:
+        if groupId is not None and len(self.chatGroupId2username.get(groupId)) > 1:
             message = {
                 "timestamp":datetime.datetime.now().strftime("%m-%d %H:%M"),
                 "username": username,
@@ -175,12 +233,19 @@ class LongConnectionHandler:
             else:
                 self.history_message[groupId] = [message]
 
-    def _log(self):
-        print("------------log------------")
-        print(self.username2chatGroupId)
-        print(self.chatGroupId2username)
-        print(self.history_message)
-        print("\n\n\n\n")
+            response.data = {
+                "status": 1,
+                "msg": "message send succeeds"
+            }
+            response.sendAjax(user.conn)
+            return
+
+        response.data = {
+            "status": 0,
+            "msg": "message send failed. Bad group id"
+        }
+        response.sendAjax(user.conn)
+
 
     def handle(self,user):
         while True:

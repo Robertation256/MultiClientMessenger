@@ -1,31 +1,25 @@
-from pyDes import des, CBC, PAD_PKCS5
-
+from pyDes import triple_des, CBC, PAD_PKCS5
+import base64
 
 class DESCrypto:
 
     def __init__(self, secret_key):
         self._secret_key = secret_key
-        self._crypto = des(self._secret_key, CBC, "\0\0\0\0\0\0\0\0" ,padmode=PAD_PKCS5)
+        self._crypto = triple_des(self._secret_key, padmode=PAD_PKCS5)
 
+    # string to b64 string
     def encrypt(self,string):
-        byteArray = string.encode("UTF-8")
-        return self._crypto.encrypt(byteArray)
+        byte_array = string.encode("UTF-8")
+        encrypted = self._crypto.encrypt(byte_array)
+        return base64.b64encode(encrypted).decode()
 
-
-    def decrypt(self,byteArray):
+    # b64 string to string
+    def decrypt(self,base64_string):
         try:
-            return self._crypto.decrypt(byteArray)
+            byteArray = base64.b64decode(base64_string)
+            return self._crypto.decrypt(byteArray).decode()
         except:
-            return "Unknown charset"
-
-
-if __name__ == "__main__":
-    c = DESCrypto("DESCRYPT")
-    res = c.encrypt("你好呀")
-    print(res)
-    print(c.decrypt(res).decode("UTF-8"))
-
-
+            return None
 
 
 

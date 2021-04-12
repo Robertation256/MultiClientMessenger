@@ -4,14 +4,19 @@
     <meta charset="UTF-8">
     <title>Title</title>
     <script src="https://code.jquery.com/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.1.0/jsencrypt.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <script src="/static?file_name=chatroom.js"></script>
 </head>
 <body>
-Hello, my friend!
+
+<!--This tag is for storing public key and is not displayed. Don't remove it-->
+<textarea id="pubkey" rows="15" cols="65" style="display:none">%s</textarea><br/>
+
 
 <button id="connect-btn">Connect</button>
 <br/>
 
-<button id="refresh-btn">Connect</button>
+<button id="refresh-btn">Refresh</button>
 </body>
 </html>

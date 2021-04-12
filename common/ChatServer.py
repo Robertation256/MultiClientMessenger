@@ -1,6 +1,5 @@
 from common.handlers.ShortConnectionHandler import ShortConnectionHandler
 from common.handlers.LongConnectionHandler import LongConnectionHandler
-from common.templates.Request import Request
 from common.templates.Response import Response
 from config import *
 import socket
@@ -108,13 +107,13 @@ class ChatServer():
             try:
                 conn, clientAddress = self.socket.accept()
                 conn.setblocking(False)
-                conn.settimeout(1)
+                # conn.settimeout(1)
                 if not self.connectionQueue.full():
                     self.connectionQueue.put(conn)
                 else:
                     self.turnDownConnection(conn)
             except OSError:
-                time.sleep(0.0001)
+                time.sleep(CONNECTION_ACCEPT_SLEEP_CYCLE)
 
 
 

@@ -11,6 +11,7 @@ class User:
         self.avatar_id = avatar_id
         self.first_time_request = True
         self.lastContactTime = time.time()
+        self.crypto = None
 
     def isAlive(self):
         '''
