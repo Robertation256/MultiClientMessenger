@@ -14,9 +14,20 @@
 	top: 10%;
 	left: 35%;
 	width: 55%;
-	height: 80%;
+	height: 60%;
 	color: black;
 	background-color: lightblue;
+	/*text-align: left;*/
+}
+
+.DivSend {
+	position: fixed;
+	top: 70%;
+	left: 35%;
+	width: 55%;
+	height: 20%;
+	color: black;
+	background-color: lightgrey;
 	/*text-align: left;*/
 }
 
