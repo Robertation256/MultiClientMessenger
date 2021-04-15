@@ -1,0 +1,22 @@
+.DivUsers {
+	position: fixed;
+	top: 10%;
+	left: 10%;
+	width: 25%;
+	height: 80%;
+	color: black;
+	background-color: lightgreen;
+	text-align: left;
+}
+
+.DivChat {
+	position: fixed;
+	top: 10%;
+	left: 35%;
+	width: 55%;
+	height: 80%;
+	color: black;
+	background-color: lightblue;
+	/*text-align: left;*/
+}
+

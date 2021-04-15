@@ -53,6 +53,7 @@ $(window).load(function(){
             success:function(data){
                 console.log("refresh feedback");
                 console.log(data);
+                console.log(decryptByDES(data, secret));
             }
 
             });
@@ -63,12 +64,20 @@ $(window).load(function(){
 
 
     function encryptByDES(message, key) {
-    var keyHex = CryptoJS.enc.Utf8.parse(key);
-    var encrypted = CryptoJS.TripleDES.encrypt(message, keyHex, {
+      var keyHex = CryptoJS.enc.Utf8.parse(key);
+      var encrypted = CryptoJS.TripleDES.encrypt(message, keyHex, {
         mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7
-    });
-    return encrypted.toString();
+        padding: CryptoJS.pad.Pkcs7,
+      });
+      return encrypted.toString();
+    }
+    function decryptByDES(message, key) {
+      var keyHex = CryptoJS.enc.Utf8.parse(key);
+      var decrpted = CryptoJS.TripleDES.decrypt(message, keyHex, {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7,
+      });
+      return decrpted.toString();
     }
 
 });

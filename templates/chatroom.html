@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <link rel="stylesheet" href="/static?file_name=chatroomStyles.css">
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.1.0/jsencrypt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
@@ -13,6 +14,12 @@
 <!--This tag is for storing public key and is not displayed. Don't remove it-->
 <textarea id="pubkey" rows="15" cols="65" style="display:none">%s</textarea><br/>
 
+<div id="divUsers" class="DivUsers">
+	
+</div>
+<div id="divChat" class="DivChat">
+	
+</div>
 
 <button id="connect-btn">Connect</button>
 <br/>
