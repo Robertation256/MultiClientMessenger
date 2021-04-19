@@ -1,87 +1,67 @@
-$(window).load(function(){
+$("#connect-btn").hide();
 
-    // This the secret for symmetric encryption. Should be 16 or 24 bytes long and randomized.
-    var secret = "zxcvbnm,./;lkjhg";
+$(function() {setTimeout(function(){
+  var secret = "zxcvbnm,./;lkjhg";
+  var publicKey = $("#pubkey").val();
+  var RSAcrypto = new JSEncrypt();
+  RSAcrypto.setPublicKey(publicKey);
 
-    var publicKey = $("#pubkey").val();
-    var RSAcrypto = new JSEncrypt();
-    RSAcrypto.setPublicKey(publicKey);
+  function showAlert(str) {
+    document.getElementById("divAlert").innerHTML = str;
+    $("#divAlert").show(100).delay(2000).hide(100);
+  }
 
+  function encryptByDES(message, key) {
+    var keyHex = CryptoJS.enc.Utf8.parse(key);
+    var encrypted = CryptoJS.TripleDES.encrypt(message, keyHex, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
+    return encrypted.toString();
+  }
 
-    $('#connect-btn').click(function(event) {
+  function decryptByDES(message, key) {
+    var keyHex = CryptoJS.enc.Utf8.parse(key);
+    var decrypted = CryptoJS.TripleDES.decrypt(message, keyHex);
+    return decrypted.toString(CryptoJS.enc.Utf8);
+  }
 
-
-      // Encrypt with the public key...
-      var encrypted_secret = RSAcrypto.encrypt(secret);
-      encrypted_secret = encrypted_secret.toString();
-
-      var test_msg = "Hello World"; //This part should also be randomized.
-      var symmetrically_encrypted_test_msg = encryptByDES(test_msg,secret).toString();
-
-      console.log("symmetric encryption:"+symmetrically_encrypted_test_msg)
-      $.ajax({
-        url:"/connect",
-        type:"post",
-        data:{
-            "secret":encrypted_secret,
-            "test_msg":symmetrically_encrypted_test_msg
-        },
-        success:function(data){
-            console.log(data);
+  function connectOnLoad() {
+    var secret_enc = RSAcrypto.encrypt(secret).toString();
+    var test_msg_enc = encryptByDES("Hello World", secret).toString();
+    $.ajax({
+      url: "/connect",
+      type: "post",
+      data: {
+        "secret": secret_enc,
+        "test_msg": test_msg_enc,
+      },
+      success: function(data_returned) {
+        console.log("connectOnLoad status:", data_returned["status"]);
+        if (data_returned["status"] == 1) {
+          $("#connect-btn").hide(100);
         }
-      });
+        return data_returned["status"];
+      },
+      error: function() {
+        return 0;
+      },
+    });
+  }
+
+  $("#connect-btn").on("click", connectOnLoad);
+  if (connectOnLoad() != 1) {
+    showAlert("Auto connect failed, please manually connect...");
+    $("#connect-btn").show(100);
+  }
 
 
-      // Decrypt with the private key...
-//      var decrypt = new JSEncrypt();
-//      decrypt.setPrivateKey($('#privkey').val());
-//      var uncrypted = decrypt.decrypt(encrypted);
-//
-//      // Now a simple check to see if the round-trip worked.
-//      if (uncrypted == $('#input').val()) {
-//        alert('It works!!!');
-//      }
-//      else {
-//        alert('Something went wrong....');
-//      }
-
-
-     $("#refresh-btn").click(function(){
-        $.ajax({
-            type:"get",
-            url:"/refresh",
-            success:function(data){
-                console.log("refresh feedback");
-                console.log(data);
-                console.log(decryptByDES(data, secret));
-            }
-
-            });
-
-
-        });
-
-
-
-    function encryptByDES(message, key) {
-      var keyHex = CryptoJS.enc.Utf8.parse(key);
-      var encrypted = CryptoJS.TripleDES.encrypt(message, keyHex, {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-      });
-      return encrypted.toString();
-    }
-    function decryptByDES(message, key) {
-      var keyHex = CryptoJS.enc.Utf8.parse(key);
-      var decrpted = CryptoJS.TripleDES.decrypt(message, keyHex, {
-        mode: CryptoJS.mode.ECB,
-        padding: CryptoJS.pad.Pkcs7,
-      });
-      return decrpted.toString();
-    }
-
+}, 1000);  // wait for 1000ms after page is loaded
 });
-});
+
+
+
+
 
 
 

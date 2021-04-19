@@ -1,3 +1,9 @@
+.DivAlert {
+	position: fixed;
+	font-size: 50;
+	display: none;
+}
+
 .DivUsers {
 	position: fixed;
 	top: 10%;
