@@ -87,9 +87,9 @@ setTimeout(function(){  // wait a while after page is loaded
         refresh_failure_count += 1;
         if (refresh_failure_count > 2) {
           user_status = "OFFLINE";
-          alert("Page refresh failed " + 
-            refresh_failure_count.toString() + 
-            " times in a row. AutoRefresh disabled.");
+          // alert("Page refresh failed " + 
+          //   refresh_failure_count.toString() + 
+          //   " times in a row. AutoRefresh disabled.");
           stopAutoRefresh();
         }
       }
@@ -97,13 +97,35 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   function refreshDivUsers(refreshed_users) {
-    var refreshed_user_names = [];
-    var refreshed_user_info = {};
     var i;
+    var temp_user;
+    var temp_id;
+    var temp_html;
     for (i=0; i<refreshed_users.length; i++) {
-      refreshed_user_names.push(refreshed_users[i]["username"]);
+      temp_user = refreshed_users[i];
+      if (out_users[temp_user["username"]]) {  // already in cache
+        if (out_users[temp_user["username"]]["status"] != "ONLINE") {
+          out_users[temp_user["username"]]["status"] = "ONLINE";  // add HTML
+          temp_id = 'divUser' + temp_user["username"];
+          temp_html = '<div class="DivUserEntry" id="' + temp_id + 
+                      '">' + temp_user["username"] + '</div>';
+          $("#divUsers").prepend(temp_html);
+          $("#"+temp_id).show(1000);
+        }
+      }
+      else {  // new to cache
+        out_users[temp_user["username"]] = {
+          "status": "ONLINE",
+          "avatar_id": temp_user["avatar_id"],
+          "chat_group_id": temp_user["chat_group_id"]
+        };
+        temp_id = 'divUser' + temp_user["username"];
+        temp_html = '<div class="DivUserEntry" id="' + temp_id + 
+                    '">' + temp_user["username"] + '</div>';
+        $("#divUsers").prepend(temp_html);
+        $("#"+temp_id).show(1000);
+      }
     }
-    console.log("refreshed_user_names:", refreshed_user_names);
   }
 
   function refreshDivChat(data_refreshed) {
