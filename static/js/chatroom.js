@@ -16,7 +16,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
-    $("#divAlert").show(100).delay(3000).hide(100);
+    $("#divAlert").show(200).delay(3000).hide(200);
   }
 
   function encryptByDES(message, key) {
@@ -52,14 +52,14 @@ setTimeout(function(){  // wait a while after page is loaded
         if (data_returned["status"] == 1) {
           user_status = "ONLINE";
           showAlert("Auto connect success!");
-          $("#connect-btn").hide(100);
-          $("#refresh-btn").show(100);
+          $("#connect-btn").hide(500);
+          $("#refresh-btn").show(500);
           startAutoRefresh();
         }
         else {
           user_status = "OFFLINE";
           showAlert("Auto connect failed! Please manually connect.");
-          $("#connect-btn").show(100);
+          $("#connect-btn").show(500);
         }
         return data_returned["status"];
       },
@@ -110,7 +110,7 @@ setTimeout(function(){  // wait a while after page is loaded
           temp_html = '<div class="DivUserEntry" id="' + temp_id + 
                       '">' + temp_user["username"] + '</div>';
           $("#divUsers").prepend(temp_html);
-          $("#"+temp_id).show(1000);
+          $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
         }
       }
       else {  // new to cache
@@ -123,7 +123,7 @@ setTimeout(function(){  // wait a while after page is loaded
         temp_html = '<div class="DivUserEntry" id="' + temp_id + 
                     '">' + temp_user["username"] + '</div>';
         $("#divUsers").prepend(temp_html);
-        $("#"+temp_id).show(1000);
+        $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
       }
     }
   }
