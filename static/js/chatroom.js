@@ -101,11 +101,12 @@ setTimeout(function(){  // wait a while after page is loaded
     var temp_user;
     var temp_id;
     var temp_html;
+    // to add into html
     for (i=0; i<refreshed_users.length; i++) {
       temp_user = refreshed_users[i];
       if (out_users[temp_user["username"]]) {  // already in cache
         if (out_users[temp_user["username"]]["status"] != "ONLINE") {
-          out_users[temp_user["username"]]["status"] = "ONLINE";  // add HTML
+          out_users[temp_user["username"]]["status"] = "ONLINE";
           temp_id = 'divUser' + temp_user["username"];
           temp_html = '<div class="DivUserEntry" id="' + temp_id + 
                       '">' + temp_user["username"] + '</div>';
@@ -115,9 +116,10 @@ setTimeout(function(){  // wait a while after page is loaded
       }
       else {  // new to cache
         out_users[temp_user["username"]] = {
-          "status": "ONLINE",
+          "username": temp_user["username"],
           "avatar_id": temp_user["avatar_id"],
-          "chat_group_id": temp_user["chat_group_id"]
+          "chat_group_id": temp_user["chat_group_id"],
+          "status": "ONLINE",
         };
         temp_id = 'divUser' + temp_user["username"];
         temp_html = '<div class="DivUserEntry" id="' + temp_id + 
@@ -125,6 +127,11 @@ setTimeout(function(){  // wait a while after page is loaded
         $("#divUsers").prepend(temp_html);
         $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
       }
+    }
+    // to remove from html
+    for (i=0; i<out_users.length; i++) {
+      temp_user = out_users[i];
+      console.log(temp_user);
     }
   }
 
