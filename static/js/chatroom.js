@@ -6,12 +6,13 @@ setTimeout(function(){  // wait a while after page is loaded
   RSAcrypto.setPublicKey(publicKey);
   var user_status = "OFFLINE";
   var curr_group = 0;
+  var REFRESH_INTERVAL = 5000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
-    $("#divAlert").show(100).delay(2000).hide(100);
+    $("#divAlert").show(100).delay(3000).hide(100);
   }
 
   function encryptByDES(message, key) {
@@ -91,16 +92,16 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   function startAutoRefresh() {  // automatically refresh page
-    if (!refresh_id) {  // AutoRefresh already on
+    if (!refresh_id) {  // AutoRefresh off
       refresh_id = setInterval(function() {
         refreshPage();
-      }, 3000);
+      }, REFRESH_INTERVAL);
     }
-    else {  // AutoRefresh off
+    else {  // AutoRefresh already on
       stopAutoRefresh();
       refresh_id = setInterval(function() {
         refreshPage();
-      }, 3000);
+      }, REFRESH_INTERVAL);
     }
   }
 
@@ -116,10 +117,11 @@ setTimeout(function(){  // wait a while after page is loaded
   });
 
   $("#refresh-btn").on("click", function(){
+    showAlert("Starting AutoRefresh!");
     startAutoRefresh();
   });
 
-  connectOnLoad();
+  connectOnLoad();  // the start of everything
 
 
 

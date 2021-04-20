@@ -1,6 +1,12 @@
 .DivAlert {
 	position: fixed;
-	font-size: 50;
+	top: 5%;
+	right: 5%;
+	z-index: 1;
+	font-family: "Lucida Console";
+	font-size: 200;
+	background-color: violet;
+	border: solid;
 	display: none;
 }
 
