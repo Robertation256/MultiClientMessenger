@@ -1,10 +1,14 @@
-$("#connect-btn").hide();
 
-$(function() {setTimeout(function(){
+$(function() {
+setTimeout(function(){  // wait a while after page is loaded
   var secret = "zxcvbnm,./;lkjhg";
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
+  var user_status = "OFFLINE";
+  var curr_group = 0;
+  var refresh_id = null;
+  var refresh_failure_count = 0;
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
@@ -39,7 +43,16 @@ $(function() {setTimeout(function(){
       success: function(data_returned) {
         console.log("connectOnLoad status:", data_returned["status"]);
         if (data_returned["status"] == 1) {
+          user_status = "ONLINE";
+          showAlert("Auto connect success!");
           $("#connect-btn").hide(100);
+          $("#refresh-btn").show(100);
+          startAutoRefresh();
+        }
+        else {
+          user_status = "OFFLINE";
+          showAlert("Auto connect failed! Please manually connect.");
+          $("#connect-btn").show(100);
         }
         return data_returned["status"];
       },
@@ -48,12 +61,62 @@ $(function() {setTimeout(function(){
       },
     });
   }
-
-  $("#connect-btn").on("click", connectOnLoad);
-  if (connectOnLoad() != 1) {
-    showAlert("Auto connect failed, please manually connect...");
-    $("#connect-btn").show(100);
+  
+  function refreshPage() {
+    $.ajax({
+      url: "/refresh",
+      type: "get",
+      success: function(data_refreshed) {
+        console.log("refreshed success, data:", data_refreshed);
+        refresh_failure_count = 0;
+      },
+      error: function() {
+        console.log("refresh failed");
+        refresh_failure_count += 1;
+        showAlert("Page refresh failed!");
+        if (refresh_failure_count > 2) {
+          showAlert("Page refresh failed " + 
+            refresh_failure_count.toString() + 
+            " times in a row. AutoRefresh disabled.");
+          stopAutoRefresh();
+        }
+      }
+    });
   }
+
+  function startAutoRefresh() {  // automatically refresh page
+    if (!refresh_id) {
+      refresh_id = setInterval(function() {
+        refreshPage();
+      }, 3000);
+    }
+    else {
+      stopAutoRefresh();
+      refresh_id = setInterval(function() {
+        refreshPage();
+      }, 3000);
+    }
+  }
+
+  function stopAutoRefresh() {
+    if (refresh_id) {
+      clearInterval(refresh_id);
+      refresh_id = null;
+    }
+  }
+
+  $("#connect-btn").on("click", function(){
+    connectOnLoad();
+  });
+
+  $("#refresh-btn").on("click", function(){
+    stopAutoRefresh();
+    refreshPage();
+    startAutoRefresh();
+  });
+
+  connectOnLoad();
+
 
 
 }, 1000);  // wait for 1000ms after page is loaded
