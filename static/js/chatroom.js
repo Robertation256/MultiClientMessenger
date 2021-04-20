@@ -1,4 +1,3 @@
-
 $(function() {
 setTimeout(function(){  // wait a while after page is loaded
   var secret = "zxcvbnm,./;lkjhg";
@@ -8,7 +7,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var user_status = "OFFLINE";
   var curr_group = 0;
   var refresh_id = null;
-  var refresh_failure_count = 0;
+  var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
@@ -26,7 +25,10 @@ setTimeout(function(){  // wait a while after page is loaded
 
   function decryptByDES(message, key) {
     var keyHex = CryptoJS.enc.Utf8.parse(key);
-    var decrypted = CryptoJS.TripleDES.decrypt(message, keyHex);
+    var decrypted = CryptoJS.TripleDES.decrypt(message, keyHex, {
+      mode: CryptoJS.mode.ECB,
+      padding: CryptoJS.pad.Pkcs7,
+    });
     return decrypted.toString(CryptoJS.enc.Utf8);
   }
 
@@ -67,6 +69,9 @@ setTimeout(function(){  // wait a while after page is loaded
       url: "/refresh",
       type: "get",
       success: function(data_refreshed) {
+        user_status = "ONLINE";
+        data_refreshed = decryptByDES(data_refreshed.toString(), secret);
+        data_refreshed = JSON.parse(data_refreshed);
         console.log("refreshed success, data:", data_refreshed);
         refresh_failure_count = 0;
       },
@@ -75,7 +80,8 @@ setTimeout(function(){  // wait a while after page is loaded
         refresh_failure_count += 1;
         showAlert("Page refresh failed!");
         if (refresh_failure_count > 2) {
-          showAlert("Page refresh failed " + 
+          user_status = "OFFLINE";
+          alert("Page refresh failed " + 
             refresh_failure_count.toString() + 
             " times in a row. AutoRefresh disabled.");
           stopAutoRefresh();
@@ -85,12 +91,12 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   function startAutoRefresh() {  // automatically refresh page
-    if (!refresh_id) {
+    if (!refresh_id) {  // AutoRefresh already on
       refresh_id = setInterval(function() {
         refreshPage();
       }, 3000);
     }
-    else {
+    else {  // AutoRefresh off
       stopAutoRefresh();
       refresh_id = setInterval(function() {
         refreshPage();
@@ -110,8 +116,6 @@ setTimeout(function(){  // wait a while after page is loaded
   });
 
   $("#refresh-btn").on("click", function(){
-    stopAutoRefresh();
-    refreshPage();
     startAutoRefresh();
   });
 
@@ -119,7 +123,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
 
 
-}, 1000);  // wait for 1000ms after page is loaded
+}, 500);  // wait after page is loaded
 });
 
 
