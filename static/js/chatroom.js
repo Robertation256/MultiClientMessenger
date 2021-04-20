@@ -4,11 +4,15 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var user_status = "OFFLINE";
-  var curr_group = 0;
   var REFRESH_INTERVAL = 5000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
+
+  var user_status = "OFFLINE";
+  var curr_group = 0;
+  var out_users = {};
+  var in_users = {};
+
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
@@ -71,15 +75,16 @@ setTimeout(function(){  // wait a while after page is loaded
       type: "get",
       success: function(data_refreshed) {
         user_status = "ONLINE";
-        data_refreshed = decryptByDES(data_refreshed.toString(), secret);
-        data_refreshed = JSON.parse(data_refreshed);
+        data_refreshed = JSON.parse(decryptByDES(data_refreshed, secret));
+        refreshDivUsers(data_refreshed["out_group_users"]);
+        refreshDivChat(data_refreshed);
         console.log("refreshed success, data:", data_refreshed);
         refresh_failure_count = 0;
       },
       error: function() {
         console.log("refresh failed");
-        refresh_failure_count += 1;
         showAlert("Page refresh failed!");
+        refresh_failure_count += 1;
         if (refresh_failure_count > 2) {
           user_status = "OFFLINE";
           alert("Page refresh failed " + 
@@ -89,6 +94,20 @@ setTimeout(function(){  // wait a while after page is loaded
         }
       }
     });
+  }
+
+  function refreshDivUsers(refreshed_users) {
+    var refreshed_user_names = [];
+    var refreshed_user_info = {};
+    var i;
+    for (i=0; i<refreshed_users.length; i++) {
+      refreshed_user_names.push(refreshed_users[i]["username"]);
+    }
+    console.log("refreshed_user_names:", refreshed_user_names);
+  }
+
+  function refreshDivChat(data_refreshed) {
+    console.log("refreshed in group users:", data_refreshed["in_group_users"]);
   }
 
   function startAutoRefresh() {  // automatically refresh page

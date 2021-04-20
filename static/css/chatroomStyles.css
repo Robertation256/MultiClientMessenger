@@ -18,7 +18,12 @@
 	height: 80%;
 	color: black;
 	background-color: lightgreen;
-	text-align: left;
+}
+
+.DivUserEntry {
+	height: 10%;
+	width: 23%;
+	background-color: green;
 }
 
 .DivChat {
