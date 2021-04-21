@@ -2,10 +2,11 @@
 	position: fixed;
 	top: 30%;
 	left: 30%;
-	width: 50%;
-	height: 30%;
+	width: 40%;
+	height: 50%;
 	color: black;
 	background-color: lightgreen;
+	border-radius: 10px;
 	text-align: center;
 }
 
@@ -14,5 +15,6 @@
 	height: 50px;
 	border-color: lightyellow;
 	border-style: none;
+	border-radius: 5px;
 }
 

@@ -13,7 +13,6 @@ setTimeout(function(){  // wait a while after page is loaded
   var out_users = {};
   var in_users = {};
 
-
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
     $("#divAlert").show(200).delay(3000).hide(200);
@@ -78,7 +77,7 @@ setTimeout(function(){  // wait a while after page is loaded
         data_refreshed = JSON.parse(decryptByDES(data_refreshed, secret));
         refreshDivUsers(data_refreshed["out_group_users"]);
         refreshDivChat(data_refreshed);
-        console.log("refreshed success, data:", data_refreshed);
+        console.log("refreshed success");
         refresh_failure_count = 0;
       },
       error: function() {
@@ -99,11 +98,13 @@ setTimeout(function(){  // wait a while after page is loaded
   function refreshDivUsers(refreshed_users) {
     var i;
     var temp_user;
+    var refreshed_usernames = [];
     var temp_id;
     var temp_html;
     // to add into html
     for (i=0; i<refreshed_users.length; i++) {
       temp_user = refreshed_users[i];
+      refreshed_usernames.push(temp_user["username"]);
       if (out_users[temp_user["username"]]) {  // already in cache
         if (out_users[temp_user["username"]]["status"] != "ONLINE") {
           out_users[temp_user["username"]]["status"] = "ONLINE";
@@ -129,14 +130,21 @@ setTimeout(function(){  // wait a while after page is loaded
       }
     }
     // to remove from html
-    for (i=0; i<out_users.length; i++) {
+    for (i in out_users) {
       temp_user = out_users[i];
-      console.log(temp_user);
+      if (!refreshed_usernames.includes(temp_user["username"])) {  // not curr online
+        out_users[i]["status"] = "OFFLINE";
+        temp_id = 'divUser' + temp_user["username"];
+        if ($("#"+temp_id)) {  // if html on page
+          $("#"+temp_id).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100).hide(500);
+          $("#"+temp_id).remove();
+        }
+      }
     }
   }
 
   function refreshDivChat(data_refreshed) {
-    console.log("refreshed in group users:", data_refreshed["in_group_users"]);
+    console.log("refreshed data:", data_refreshed);
   }
 
   function startAutoRefresh() {  // automatically refresh page
@@ -159,6 +167,12 @@ setTimeout(function(){  // wait a while after page is loaded
       refresh_id = null;
     }
   }
+
+  $(document).on("click", ".DivUserEntry", function(){
+    console.log("a DivUserEntry was clicked");
+    $(this).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+    var user_tojoin = $(this).html();
+  });
 
   $("#connect-btn").on("click", function(){
     connectOnLoad();
