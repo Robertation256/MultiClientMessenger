@@ -110,7 +110,9 @@ setTimeout(function(){  // wait a while after page is loaded
           out_users[temp_user["username"]]["status"] = "ONLINE";
           temp_id = 'divUser' + temp_user["username"];
           temp_html = '<div class="DivUserEntry" id="' + temp_id + 
-                      '">' + temp_user["username"] + '</div>';
+                      '">' + 
+                      '<text>' + temp_user["username"] + '</text>' + 
+                      '</div>';
           $("#divUsers").prepend(temp_html);
           $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
         }
@@ -124,7 +126,9 @@ setTimeout(function(){  // wait a while after page is loaded
         };
         temp_id = 'divUser' + temp_user["username"];
         temp_html = '<div class="DivUserEntry" id="' + temp_id + 
-                    '">' + temp_user["username"] + '</div>';
+                    '">' + 
+                    '<text>' + temp_user["username"] + '</text>' + 
+                    '</div>';
         $("#divUsers").prepend(temp_html);
         $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
       }
@@ -145,6 +149,10 @@ setTimeout(function(){  // wait a while after page is loaded
 
   function refreshDivChat(data_refreshed) {
     console.log("refreshed data:", data_refreshed);
+  }
+
+  function joinGroup(user_tojoin, groupid_tojoin) {
+    ;
   }
 
   function startAutoRefresh() {  // automatically refresh page
@@ -169,16 +177,34 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   $(document).on("click", ".DivUserEntry", function(){
-    console.log("a DivUserEntry was clicked");
     $(this).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
-    var user_tojoin = $(this).html();
+    var user_tojoin = $(this).filter("text").html();
+    var groupid_tojoin = out_users[user_tojoin]["chat_group_id"];
+    console.log(user_tojoin, "was clicked");
+    $.ajax({
+      url: "/join?group_id="+groupid_tojoin,
+      type: "get",
+      success: function(join_result) {
+        if (join_result["status"] == 1) {
+          joinGroup(user_tojoin, groupid_tojoin);
+        }
+        else {
+          showAlert("Failed to join " + user_tojoin + "!");
+          console.log("server joining", user_tojoin, "failed");
+        }
+      },
+      error: function() {
+        showAlert("Failed to join " + user_tojoin + "!");
+        console.log("ajax joining", user_tojoin, "failed");
+      }
+    });
   });
 
-  $("#connect-btn").on("click", function(){
+  $("#connect-btn").on("click", function() {
     connectOnLoad();
   });
 
-  $("#refresh-btn").on("click", function(){
+  $("#refresh-btn").on("click", function() {
     showAlert("Starting AutoRefresh!");
     startAutoRefresh();
   });
