@@ -8,7 +8,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
-  var user_status = "OFFLINE";
+  var my_status = "OFFLINE";
   var curr_group = 0;
   var out_users = {};
   var in_users = {};
@@ -49,14 +49,14 @@ setTimeout(function(){  // wait a while after page is loaded
       success: function(data_returned) {
         console.log("connectOnLoad status:", data_returned["status"]);
         if (data_returned["status"] == 1) {
-          user_status = "ONLINE";
+          my_status = "ONLINE";
           showAlert("Auto connect success!");
           $("#connect-btn").hide(500);
           $("#refresh-btn").show(500);
           startAutoRefresh();
         }
         else {
-          user_status = "OFFLINE";
+          my_status = "OFFLINE";
           showAlert("Auto connect failed! Please manually connect.");
           $("#connect-btn").show(500);
         }
@@ -73,7 +73,7 @@ setTimeout(function(){  // wait a while after page is loaded
       url: "/refresh",
       type: "get",
       success: function(data_refreshed) {
-        user_status = "ONLINE";
+        my_status = "ONLINE";
         data_refreshed = JSON.parse(decryptByDES(data_refreshed, secret));
         refreshDivUsers(data_refreshed["out_group_users"]);
         refreshDivChat(data_refreshed);
@@ -85,7 +85,7 @@ setTimeout(function(){  // wait a while after page is loaded
         showAlert("Page refresh failed!");
         refresh_failure_count += 1;
         if (refresh_failure_count > 2) {
-          user_status = "OFFLINE";
+          my_status = "OFFLINE";
           // alert("Page refresh failed " + 
           //   refresh_failure_count.toString() + 
           //   " times in a row. AutoRefresh disabled.");
@@ -151,10 +151,6 @@ setTimeout(function(){  // wait a while after page is loaded
     console.log("refreshed data:", data_refreshed);
   }
 
-  function joinGroup(user_tojoin, groupid_tojoin) {
-    ;
-  }
-
   function startAutoRefresh() {  // automatically refresh page
     if (!refresh_id) {  // AutoRefresh off
       refresh_id = setInterval(function() {
@@ -178,15 +174,21 @@ setTimeout(function(){  // wait a while after page is loaded
 
   $(document).on("click", ".DivUserEntry", function(){
     $(this).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
-    var user_tojoin = $(this).filter("text").html();
+    var user_tojoin = $(this).children().filter($("text")).html();
     var groupid_tojoin = out_users[user_tojoin]["chat_group_id"];
-    console.log(user_tojoin, "was clicked");
+    if (groupid_tojoin == curr_group) {  // already in this group, do nothing
+      return;
+    }
     $.ajax({
       url: "/join?group_id="+groupid_tojoin,
       type: "get",
       success: function(join_result) {
         if (join_result["status"] == 1) {
-          joinGroup(user_tojoin, groupid_tojoin);
+          console.log(join_result);
+          console.log("server joining", user_tojoin, "success");
+          my_status = "INGROUP";
+          curr_group = groupid_tojoin;
+          refreshPage();  // this function updates everything on page
         }
         else {
           showAlert("Failed to join " + user_tojoin + "!");
@@ -201,6 +203,7 @@ setTimeout(function(){  // wait a while after page is loaded
   });
 
   $("#connect-btn").on("click", function() {
+    showAlert("Starting Connection!");
     connectOnLoad();
   });
 
