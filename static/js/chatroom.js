@@ -118,6 +118,11 @@ setTimeout(function(){  // wait a while after page is loaded
     $("#listOfPeople").children().remove();
     for (i=0; i<refreshed_in_users.length; i++) {
       temp_user = refreshed_in_users[i];
+      out_users[temp_user["username"]] = {
+        "username": temp_user["username"],
+        "chat_group_id": temp_user["chat_group_id"],
+        "avatar_id": temp_user["avatar_id"]
+      };
       temp_html = '<div class="chat_list active_chat" id="user'+temp_user["username"]+'">'+
                   '<div class="chat_people">'+
                   '<div class="chat_img"> '+
@@ -132,6 +137,11 @@ setTimeout(function(){  // wait a while after page is loaded
     }
     for (i=0; i<refreshed_out_users.length; i++) {
       temp_user = refreshed_out_users[i];
+      out_users[temp_user["username"]] = {
+        "username": temp_user["username"],
+        "chat_group_id": temp_user["chat_group_id"],
+        "avatar_id": temp_user["avatar_id"]
+      };
       temp_html = '<div class="chat_list" id="user'+temp_user["username"]+'">'+
                   '<div class="chat_people">' + 
                   '<div class="chat_img"> '+
@@ -191,9 +201,9 @@ setTimeout(function(){  // wait a while after page is loaded
     autoRefresh = false;
   }
 
-  $(document).on("click", ".DivUserEntry", function(){
+  $(document).on("click", ".chat_list", function(){
     $(this).fadeOut(100).fadeIn(100);
-    var user_tojoin = $(this).children().filter($("text")).html();
+    var user_tojoin = $(this).children().filter($("h5")).html();
     var groupid_tojoin = out_users[user_tojoin]["chat_group_id"];
     if (groupid_tojoin == curr_group) {  // already in this group, do nothing
       return;
