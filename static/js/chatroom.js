@@ -6,7 +6,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var REFRESH_INTERVAL = 2000;  // time between two AutoRefreshes
+  var REFRESH_INTERVAL = 5000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
@@ -40,7 +40,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
   function connectOnLoad() {
     var secret_enc = RSAcrypto.encrypt(secret).toString();
-    var test_msg_enc = encryptByDES("Hello World", secret).toString();
+    var test_msg_enc = encryptByDES("Hello World", secret);
     $.ajax({
       url: "/connect",
       type: "post",
@@ -98,9 +98,9 @@ setTimeout(function(){  // wait a while after page is loaded
        }
       }
     });
-    if (autoRefresh){
-        setTimeout(refreshPage, REFRESH_INTERVAL);
-        }
+    if (autoRefresh) {
+      setTimeout(refreshPage, REFRESH_INTERVAL);
+    }
   }
 
   function refreshDivUsers(refreshed_out_users, refreshed_in_users) {
@@ -263,7 +263,7 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   function refreshDivChat(chat_messages) {
-    console.log(chat_messages);
+    console.log("chat_messages:", chat_messages);
   }
 
   function startAutoRefresh() {  // automatically refresh page
@@ -302,10 +302,10 @@ setTimeout(function(){  // wait a while after page is loaded
       type: "get",
       success: function(join_result) {
         if (join_result["status"] == 1) {
-          console.log(join_result);
           console.log("server joining", user_tojoin, "success");
           my_status = "INGROUP";
           curr_group = groupid_tojoin;
+          refreshPage();
         }
         else {
           showAlert("Failed to join " + user_tojoin + "!");
@@ -330,7 +330,29 @@ setTimeout(function(){  // wait a while after page is loaded
   });
 
   $("#send-btn").on("click", function() {
-    
+    var msg = $("#inputSendMsg").val();
+    $("#inputSendMsg").val("");
+    if (msg == "") {  // nothing to send
+      return;
+    }
+    msg = encryptByDES(msg, secret);
+    $.ajax({
+      url: "/send_message",
+      type: "post",
+      data: {
+        "message": msg
+      },
+      success: function(send_result) {
+        if (send_result["status"] == 1) {
+          console.log("send message success");
+          refreshPage();
+        }
+        else {
+          console.log("send message failed");
+          showAlert("Sending message failed!");
+        }
+      },
+    });
   });
 
   connectOnLoad();  // the start of everything
