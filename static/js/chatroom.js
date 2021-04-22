@@ -203,7 +203,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
   $(document).on("click", ".chat_list", function(){
     $(this).fadeOut(100).fadeIn(100);
-    var user_tojoin = $(this).children().filter($("h5")).html();
+    var user_tojoin = $(this).attr("id").slice(4,);
     var groupid_tojoin = out_users[user_tojoin]["chat_group_id"];
     if (groupid_tojoin == curr_group) {  // already in this group, do nothing
       return;
@@ -213,11 +213,9 @@ setTimeout(function(){  // wait a while after page is loaded
       type: "get",
       success: function(join_result) {
         if (join_result["status"] == 1) {
-          // console.log("server joining", user_tojoin, "success");
           my_status = "INGROUP";
           curr_group = groupid_tojoin;
           latest_msg_timestamp = BASE_TIMESTAMP;
-          // refreshPage();
         }
         else {
           showAlert("Failed to join " + user_tojoin + "!");
@@ -241,9 +239,10 @@ setTimeout(function(){  // wait a while after page is loaded
     startAutoRefresh();
   });
 
-  $("#send-btn").on("click", function() {
-    var msg = $("#inputSendMsg").val();
-    $("#inputSendMsg").val("");
+  $(".msg_send_btn").on("click", function() {
+    var msg = $("#inputMessageBlah").val();
+    console.log("sendingmessage:", msg);
+    $("#inputMessageBlah").val("");
     if (msg == "") {  // nothing to send
       return;
     }
