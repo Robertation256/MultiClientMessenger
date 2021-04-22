@@ -61,6 +61,7 @@ class ShortConnectionHandler():
             avatar_id=avatar_id,
             conn=None,
         )
+        print(f"[Loggedin User] username: {username}, avatar_id: {avatar_id}")
         self.loggedInUsers[username] = user
         response.data = {
             "status": 1,

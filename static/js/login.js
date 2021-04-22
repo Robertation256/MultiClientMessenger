@@ -1,6 +1,7 @@
-avatar_id = 1;
+
 
 $(window).load(function(){
+    var avatar_id = 1;
 
     $("#next-btn").click(function(){
         if (avatar_id==15){
@@ -22,10 +23,11 @@ $(window).load(function(){
     })
     
     $("#login-btn").click(function(e){
+        var result = "";
         if (avatar_id<10){
-            var result = "0"+avatar_id;
+            result = "0"+avatar_id.toString();
         }
-        result = "avatar"+avatar_id;
+        result = "avatar"+result;
         e.preventDefault();
         $.ajax({
             url:"/login",
