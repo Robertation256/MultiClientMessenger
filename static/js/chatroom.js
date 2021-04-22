@@ -6,7 +6,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var REFRESH_INTERVAL = 3000;  // time between two AutoRefreshes
+  var REFRESH_INTERVAL = 5000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
@@ -84,7 +84,7 @@ setTimeout(function(){  // wait a while after page is loaded
         refresh_failure_count = 0;
       },
       error: function() {
-        console.log("refresh failed");
+        // console.log("refresh failed");
         showAlert("Page refresh failed!");
         refresh_failure_count += 1;
        if (refresh_failure_count > 5) {
@@ -109,7 +109,100 @@ setTimeout(function(){  // wait a while after page is loaded
     var temp_id;
     var temp_html;
     // to add into html, for out_group_users
-    
+      for (i=0; i<refreshed_out_users.length; i++) {
+        refreshed_out_usernames.push(refreshed_out_users[i]["username"]);
+      }
+      for (i=0; i<refreshed_in_users.length; i++) {
+        refreshed_in_usernames.push(refreshed_in_users[i]["username"]);
+      }
+      // first, clear current html page
+      for (u in out_users) {
+        temp_user = out_users[u];
+        if (!refreshed_out_usernames.includes(temp_user["username"]) && 
+            temp_user["ingroup"] == "FALSE") {
+          out_users[u]["status"] = "OFFLINE";
+          temp_id = "divUser" + temp_user["username"];
+          if ($("#"+temp_id)) {
+            $("#"+temp_id).hide(500);
+            $("#"+temp_id).remove();
+          }
+        }
+        if (!refreshed_in_usernames.includes(temp_user["username"]) && 
+            temp_user["ingroup"] == "TRUE") {
+          out_users[u]["status"] = "OFFLINE";
+          temp_id = "divUser" + temp_user["username"];
+          if ($("#"+temp_id)) {
+            $("#"+temp_id).hide(500);
+            $("#"+temp_id).remove();
+          }
+        }
+      }
+      // then, add into html page
+      for (i=0; i<refreshed_out_users.length; i++) {
+        temp_user = refreshed_out_users[i];
+        if (out_users[temp_user["username"]]) {
+          out_users[temp_user["username"]]["chat_group_id"] = temp_user["chat_group_id"];
+          // already "ONLINE" means already in html
+          if (out_users[temp_user["username"]]["status"] != "ONLINE") {
+            out_users[temp_user["username"]]["status"] = "ONLINE";
+            out_users[temp_user["username"]]["ingroup"] = "FALSE";
+            temp_id = 'divUser' + temp_user["username"];
+            temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
+                        '<text>' + temp_user["username"] + '</text>' + 
+                        '</div>';
+            $("#divUsers").prepend(temp_html);
+            $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
+          }
+        }
+        else {
+          out_users[temp_user["username"]] = {
+            "username": temp_user["username"], 
+            "avatar_id": temp_user["avatar_id"], 
+            "chat_group_id": temp_user["chat_group_id"], 
+            "status": "ONLINE",
+            "ingroup": "FALSE"
+          };
+          temp_id = 'divUser' + temp_user["username"];
+          temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
+                      '<text>' + temp_user["username"] + '</text>' + 
+                      '</div>';
+          $("#divUsers").prepend(temp_html);
+          $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
+        }
+      }
+      for (i=0; i<refreshed_in_users.length; i++) {
+        temp_user = refreshed_in_users[i];
+        if (out_users[temp_user["username"]]) {
+          out_users[temp_user["username"]]["chat_group_id"] = temp_user["chat_group_id"];
+          // already "ONLINE" means already in html
+          if (out_users[temp_user["username"]]["status"] != "ONLINE") {
+            out_users[temp_user["username"]]["status"] = "ONLINE";
+            out_users[temp_user["username"]]["ingroup"] = "TRUE";
+            temp_id = 'divUser' + temp_user["username"];
+            temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
+                        '<text>' + temp_user["username"] + 'TOGETHER' + '</text>' + 
+                        '</div>';
+            $("#divUsers").prepend(temp_html);
+            $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
+          }
+        }
+        else {
+          out_users[temp_user["username"]] = {
+            "username": temp_user["username"], 
+            "avatar_id": temp_user["avatar_id"], 
+            "chat_group_id": temp_user["chat_group_id"], 
+            "status": "ONLINE",
+            "ingroup": "TRUE"
+          };
+          temp_id = 'divUser' + temp_user["username"];
+          temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
+                      '<text>' + temp_user["username"] + 'TOGETHER' + '</text>' + 
+                      '</div>';
+          $("#divUsers").prepend(temp_html);
+          $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
+        }
+      }
+
     // for (i=0; i<refreshed_out_users.length; i++) {
     //   temp_user = refreshed_out_users[i];
     //   refreshed_out_usernames.push(temp_user["username"]);
