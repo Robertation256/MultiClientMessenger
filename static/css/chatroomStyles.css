@@ -57,7 +57,6 @@
 	border-color: green;
 	border-style: none;
 	display: flex;
-	display: none;
 }
 
 .AvatarImg {
@@ -87,8 +86,8 @@
 }
 
 .DivChatInMsg {
-	position: relative;
-	margin-left: 5%;
+	left: 5%;
+	align-self: baseline;
 	color: black;
 	border-style: solid;
 	border-width: 1px;
@@ -98,8 +97,7 @@
 }
 
 .DivChatOutMsg {
-	position: relative;
-	margin-right: 5%;
+	align-self: baseline;
 	color: black;
 	border-style: solid;
 	border-width: 1px;
