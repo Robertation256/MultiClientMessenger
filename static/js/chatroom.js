@@ -34,6 +34,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
   function decryptByDES(message, key) {
     var keyHex = CryptoJS.enc.Utf8.parse(key);
+
     var decrypted = CryptoJS.TripleDES.decrypt(message, keyHex, {
       mode: CryptoJS.mode.ECB,
       padding: CryptoJS.pad.Pkcs7,
@@ -188,6 +189,8 @@ setTimeout(function(){  // wait a while after page is loaded
                       '</div></div>';
           $("#allMessages").append(temp_html);
         }
+        document.getElementById("allMessages").scrollTop = 
+          document.getElementById("allMessages").scrollHeight;
       }
     }
   }
