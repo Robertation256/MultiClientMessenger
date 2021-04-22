@@ -22,7 +22,7 @@ h2 {
 .background {
   height: 100%;
   width: 100%;
-  background-image: url("/static?file_name=favicon.jpg");
+  background-color:#05728F;
   background-size: 100% 100%;
   background-position: center;
 }
@@ -81,7 +81,7 @@ h2.active {
 
 input[type=button], input[type=submit], input[type=reset]  {
   width: 85%;
-  background-color: #2CBB00;
+  background-color: #05728F;
   border: none;
   color: white;
   padding: 15px 80px;
@@ -266,24 +266,39 @@ h1 {
 }
 
 .image_container {
-    height: 20%;
+    height:30%;
+    width:100%;
+    margin-bottom: 20%;
+    margin-top:10%;
+    display:flex;
+    flex-direction: row;
+}
+
+#carouselExampleControls{
+    height: 100%;
     width: 40%;
-    margin-left:30%;
-    margin-bottom: 40%;
+    margin-left:17%;
+    margin-right:17%;
 }
 
 .avatar-image {
-    height: 70%;
-    width: 70%;
-    border-radius:30%;
+    height: 100%;
+    width: 100%;
 }
 
-.carousel-control-prev-icon{
+
+
+
+.carousel-control-prev{
+    height:90% !important;
+    width:13% !important;
     background-color:black !important;
-    margin-right:20% ;
+    position: relative !important;
 }
 
-.carousel-control-next-icon {
+.carousel-control-next {
+    height:90% !important;
+    width:13% !important;
+    position: relative !important;
     background-color:black !important;
-    margin-left:20% ;
 }
