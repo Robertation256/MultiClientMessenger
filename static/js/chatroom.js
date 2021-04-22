@@ -77,7 +77,7 @@ setTimeout(function(){  // wait a while after page is loaded
   function refreshPage() {
     $.ajax({
       url: "/refresh",
-      timeout: REFRESH_INTERVAL,
+      timeout: 2000,
       type: "get",
       success: function(data_refreshed) {
         my_status = "ONLINE";
@@ -232,14 +232,16 @@ setTimeout(function(){  // wait a while after page is loaded
         if (curr_msg["username"] != my_username) {  // incoming msg
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
           temp_html = '<div class="DivChatInMsg" id="' + temp_id + '">' + 
-                      curr_msg["message"] + 
+                      '<div class="DivChatInMsgText">' + curr_msg["message"] + '</div>'
                       '</div>';
           $("#divChat").append(temp_html);
           $("#"+temp_id).show(500);
         }
         else {
+          console.log("out going message sent");
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
           temp_html = '<div class="DivChatOutMsg" id="' + temp_id + '">' + 
+                      '<div class="DivChatOutMsgText">' + curr_msg["message"] + '</div>'
                       curr_msg["message"] + 
                       '</div>';
           $("#divChat").append(temp_html);

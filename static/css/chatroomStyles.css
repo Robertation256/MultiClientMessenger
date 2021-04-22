@@ -80,30 +80,36 @@
 	width: 55%;
 	height: 70%;
 	color: black;
-	border-style: inset;
 	border-radius: 10px;
 	background-color: lightblue;
 }
 
 .DivChatInMsg {
-	left: 5%;
-	align-self: baseline;
+	margin: 2%;
+	border-style: none;
+	display: block;
+}
+
+.DivChatInMsgText {
 	color: black;
-	border-style: solid;
-	border-width: 1px;
-	border-radius: 10px;
 	background-color: white;
-	display: inline-block;
+	border-radius: 5px;
+	align-content: left;
 }
 
 .DivChatOutMsg {
-	align-self: baseline;
+	margin: 2%;
+	border-style: none;
+	display: block;
+	align-content: right;
+}
+
+.DivChatOutMsgText {
 	color: black;
-	border-style: solid;
-	border-width: 1px;
-	border-radius: 10px;
+	width: auto;
 	background-color: white;
-	display: inline-block;
+	border-radius: 5px;
+	border: 5px solid black;
 }
 
 .DivSend {
