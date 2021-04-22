@@ -23,6 +23,10 @@ $(window).load(function(){
     
     $("#login-btn").click(function(e){
         console.log("herere");
+        if (avatar_id<10){
+            avatar_id = "0"+avatar_id;
+        }
+        avatar_id = "avatar"+avatar_id;
         e.preventDefault();
         $.ajax({
             url:"/login",
