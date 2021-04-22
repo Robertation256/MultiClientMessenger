@@ -141,7 +141,7 @@ class LoggedInUserHandler:
         chatMessages = self.history_message.get(chatGroupId,[])
 
         result = {
-            "my_chat_group_id": self.username2chatGroupId[username],
+            "username": username,
             "in_group_users":inGroupUserInfo,
             "out_group_users":outGroupUserInfo,
             "chat_messages": chatMessages
