@@ -266,6 +266,27 @@ setTimeout(function(){  // wait a while after page is loaded
     });
   });
 
+  $("#logout-btn").on("click", function() {
+    $.ajax({
+      url: "/logout",
+      type: "post",
+      success: function(logout_result) {
+        if (logout_result["status"] == 1) {
+          console.log("logout success");
+          window.location.replace("/login");
+        }
+        else {
+          console.log("logout denied");
+          showAlert("Logout request denied!");
+        }
+      },
+      error: function() {
+        console.log("logout denied");
+        showAlert("Logout request denied!");
+      }
+    });
+  });
+
   connectOnLoad();  // the start of everything
 
 }, 500);  // wait after page is loaded
