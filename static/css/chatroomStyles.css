@@ -92,24 +92,28 @@
 
 .DivChatInMsgText {
 	color: black;
+	height: min-content;
+	width: min-content;
 	background-color: white;
 	border-radius: 5px;
-	align-content: left;
+	border: 1px black;
+	float: left;
 }
 
 .DivChatOutMsg {
 	margin: 2%;
 	border-style: none;
 	display: block;
-	align-content: right;
 }
 
 .DivChatOutMsgText {
 	color: black;
-	width: auto;
+	height: min-content;
+	width: min-content;
 	background-color: white;
 	border-radius: 5px;
-	border: 5px solid black;
+	border: 1px black;
+	float: right;
 }
 
 .DivSend {
