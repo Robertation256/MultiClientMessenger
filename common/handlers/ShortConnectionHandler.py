@@ -40,10 +40,18 @@ class ShortConnectionHandler():
         data = request.data
         username = data.get("username")
         response = Response()
+        if username is None or username == "":
+            response.data = {
+                "status": 0,
+                "msg": "Username cannot be empty"
+            }
+            response.sendAjax(conn)
+            return
+
         if username in self.loggedInUsers:
             response.data = {
-                "status":0,
-                "msg":"This username has been occupied."
+                "status": 0,
+                "msg": "This username has been occupied."
             }
             response.sendAjax(conn)
             return
@@ -54,8 +62,12 @@ class ShortConnectionHandler():
             conn=None,
         )
         self.loggedInUsers[username] = user
+        response.data = {
+            "status": 1,
+            "msg": "Login succeeds."
+        }
         response.setSession(username)
-        response.sendRedirect(conn,location="/chatroom")
+        response.sendAjax(conn)
 
     def _handle_get_chatroom(self,request,conn):
         with open(TEMPLATE_PATH+"/chatroom.html","r") as fp:

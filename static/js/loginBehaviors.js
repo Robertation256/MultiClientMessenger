@@ -13,7 +13,7 @@ $(window).load(function(){
     
     
     $("#prev-btn").click(function(){
-        if (avatar_id==0){
+        if (avatar_id==1){
             avatar_id = 15;
         }
         else{
@@ -22,21 +22,25 @@ $(window).load(function(){
     })
     
     $("#login-btn").click(function(e){
-        console.log("herere");
         if (avatar_id<10){
-            avatar_id = "0"+avatar_id;
+            var result = "0"+avatar_id;
         }
-        avatar_id = "avatar"+avatar_id;
+        result = "avatar"+avatar_id;
         e.preventDefault();
         $.ajax({
             url:"/login",
             type:"POST",
             data:{
                 username:$("#username").val(),
-                avatar_id:avatar_id
+                avatar_id:result
             },
             success: function(data){
-                window.location.href="/chatroom";
+                if (!data.status){
+                    alert(data.msg);
+                }
+                else{
+                    window.location.href="/chatroom";
+                }
             }
         });
         
