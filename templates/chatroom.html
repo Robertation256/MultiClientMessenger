@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>Chatroom</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
     <link rel="stylesheet" href="/static?file_name=chatroomStyles.css">
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.1.0/jsencrypt.min.js"></script>
@@ -16,7 +18,9 @@
 
 <!--This tag is for storing public key and is not displayed. Don't remove it-->
 <textarea id="pubkey" rows="15" cols="65" style="display:none">%s</textarea><br/>
-
+<i class="material-icons" id="logout-btn">
+logout
+</i>
 <div id="divAlert"></div>
 <div class="container">
 
