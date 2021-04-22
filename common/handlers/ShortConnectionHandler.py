@@ -31,7 +31,7 @@ class ShortConnectionHandler():
         responseTemplate = Response()
         if request.getSession() != None:
             responseTemplate.setSession("")
-        with open(TEMPLATE_PATH+"/loginPage.html", "r", encoding="UTF-8") as fp:
+        with open(TEMPLATE_PATH+"/newloginPage.html", "r", encoding="UTF-8") as fp:
             data = fp.read()
         responseTemplate.data = data
         responseTemplate.sendHTML(conn)

@@ -1,23 +1,51 @@
-$("#divLogin").hide();
-$(function() {
-	$("#divLogin").show(500);
-	console.log("start of js");
+avatar_id = 1;
 
-	// $("input[name='username']").on("click", function(){
-	// 	var toAlert = "dalf";
-	// 	alert(toAlert);
-	// });
+$(window).load(function(){
 
-	$("label").on("click", function(){
-		if ($(this).attr("for").indexOf("avatar") == 0){
-			$(this).children().children().css("border-style", "solid");
-			$(this).siblings().children().children().css("border-style", "none");
-		};
-	});
+    $("#next-btn").click(function(){
+        if (avatar_id==15){
+            avatar_id = 1;
+        }
+        else{
+            avatar_id += 1;
+        }
+    })
+    
+    
+    $("#prev-btn").click(function(){
+        if (avatar_id==0){
+            avatar_id = 15;
+        }
+        else{
+            avatar_id -= 1;
+        }
+    })
+    
+    $("#login-btn").click(function(e){
+        console.log("herere");
+        e.preventDefault();
+        $.ajax({
+            url:"/login",
+            type:"POST",
+            data:{
+                username:$("#username").val(),
+                avatar_id:avatar_id
+            },
+            success: function(data){
+                window.location.href="/chatroom";
+            }
+        });
+        
+    })
 
-	var sth = false
-	if (sth) {
-		$("#divError").text("Error Message here");
-		$("#divError").show(500);
-	};
 });
+
+
+
+$(window).ready(function(){
+    $('.carousel').carousel({
+        interval: false,
+    });
+
+});
+
