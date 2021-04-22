@@ -86,7 +86,7 @@ setTimeout(function(){  // wait a while after page is loaded
         curr_group = data["my_chat_group_id"];
         refreshDivUsers(data["out_group_users"], data["in_group_users"]);
         refreshDivChat(data["chat_messages"]);
-        console.log("refreshed success");
+        // console.log("refreshed success");
         refresh_failure_count = 0;
       },
       error: function() {
@@ -221,7 +221,6 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   function refreshDivChat(chat_messages) {
-    console.log("chat_messages:", chat_messages);
     var i = 0;
     var temp_html;
     for (i=0; i<chat_messages.length; i++) {
