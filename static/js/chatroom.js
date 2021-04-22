@@ -34,6 +34,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
   function decryptByDES(message, key) {
     var keyHex = CryptoJS.enc.Utf8.parse(key);
+
     var decrypted = CryptoJS.TripleDES.decrypt(message, keyHex, {
       mode: CryptoJS.mode.ECB,
       padding: CryptoJS.pad.Pkcs7,
@@ -188,6 +189,8 @@ setTimeout(function(){  // wait a while after page is loaded
                       '</div></div>';
           $("#allMessages").append(temp_html);
         }
+        document.getElementById("allMessages").scrollTop = 
+          document.getElementById("allMessages").scrollHeight;
       }
     }
   }
@@ -263,6 +266,27 @@ setTimeout(function(){  // wait a while after page is loaded
           showAlert("Sending message failed!");
         }
       },
+    });
+  });
+
+  $("#logout-btn").on("click", function() {
+    $.ajax({
+      url: "/logout",
+      type: "post",
+      success: function(logout_result) {
+        if (logout_result["status"] == 1) {
+          console.log("logout success");
+          window.location.replace("/login");
+        }
+        else {
+          console.log("logout denied");
+          showAlert("Logout request denied!");
+        }
+      },
+      error: function() {
+        console.log("logout denied");
+        showAlert("Logout request denied!");
+      }
     });
   });
 
