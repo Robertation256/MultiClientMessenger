@@ -6,7 +6,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var REFRESH_INTERVAL = 5000;  // time between two AutoRefreshes
+  var REFRESH_INTERVAL = 2000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
@@ -73,7 +73,7 @@ setTimeout(function(){  // wait a while after page is loaded
   function refreshPage() {
     $.ajax({
       url: "/refresh",
-      timeout: 3000,
+      timeout: REFRESH_INTERVAL,
       type: "get",
       success: function(data_refreshed) {
         my_status = "ONLINE";
@@ -87,17 +87,17 @@ setTimeout(function(){  // wait a while after page is loaded
         console.log("refresh failed");
         showAlert("Page refresh failed!");
         refresh_failure_count += 1;
-//        if (refresh_failure_count > 2) {
-//          my_status = "OFFLINE";
-//          // alert("Page refresh failed " +
-//          //   refresh_failure_count.toString() +
-//          //   " times in a row. AutoRefresh disabled.");
-//          stopAutoRefresh();
-//        }
+       if (refresh_failure_count > 5) {
+         my_status = "OFFLINE";
+         // alert("Page refresh failed " +
+         //   refresh_failure_count.toString() +
+         //   " times in a row. AutoRefresh disabled.");
+         stopAutoRefresh();
+       }
       }
     });
     if (autoRefresh){
-        setTimeout(refreshPage, 2000);
+        setTimeout(refreshPage, REFRESH_INTERVAL);
         }
   }
 
@@ -182,7 +182,7 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   $(document).on("click", ".DivUserEntry", function(){
-    $(this).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+    $(this).fadeOut(100).fadeIn(100);
     var user_tojoin = $(this).children().filter($("text")).html();
     var groupid_tojoin = out_users[user_tojoin]["chat_group_id"];
     if (groupid_tojoin == curr_group) {  // already in this group, do nothing
