@@ -1,5 +1,7 @@
 from common.templates.Response import Response
 import time
+from config import *
+from queue import Queue
 import uuid
 import datetime
 import json
@@ -112,7 +114,6 @@ class LoggedInUserHandler:
         user = self.loggedInUsers[username]
         user.lastContactTime = time.time()
         username = request.getSession()
-        print(f"refresh request from     user: {username} ")
         if username not in self.username2chatGroupId:
             self._handle_default(request,user)
             return
@@ -138,7 +139,13 @@ class LoggedInUserHandler:
                 entry["chat_group_id"] = self.username2chatGroupId[name]
                 outGroupUserInfo.append(entry)
 
-        chatMessages = self.history_message.get(chatGroupId,[])
+        chatMessages = []
+        target_message_queue = self.loggedInUsers[username].message_queue
+        message_num = REFRESH_MESSAGE_NUM
+        while not target_message_queue.empty() and message_num >0:
+            chatMessages.append(target_message_queue.get())
+            message_num -= 1
+
 
         result = {
             "username": username,
@@ -187,6 +194,7 @@ class LoggedInUserHandler:
                 self.history_message.pop(originalGroupId)
         self.chatGroupId2username[targetGroupId].append(username)
         self.username2chatGroupId[username] = targetGroupId
+        user.message_queue = Queue()
 
         response.data = {
             "status": 1,
@@ -223,10 +231,11 @@ class LoggedInUserHandler:
                 "avatar_id": user.avatar_id,
                 "message": message
             }
-            if groupId in self.history_message:
-                self.history_message[groupId].append(message)
-            else:
-                self.history_message[groupId] = [message]
+            if groupId in self.chatGroupId2username:
+                usernames = self.chatGroupId2username[groupId]
+                for username1 in usernames:
+                    user_ins = self.loggedInUsers[username1]
+                    user_ins.message_queue.put(message)
 
             response.data = {
                 "status": 1,

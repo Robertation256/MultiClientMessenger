@@ -6,7 +6,6 @@ import socket
 import threading
 from multiprocessing import Queue
 import time
-import ctypes
 
 
 class ChatServer():
