@@ -23,7 +23,7 @@ class LoggedInUserHandler:
         self.mapping = {
             "GET/refresh": self._handle_refresh,
             "GET/join": self._handle_join,
-            "GET/send_message": self._handle_send_message,
+            "POST/send_message": self._handle_send_message,
             "POST/connect": self._handle_establish_long_connection,
 
         }
@@ -216,9 +216,9 @@ class LoggedInUserHandler:
 
 
         # todo: this part right now is nasty, add more error handling later
-        if groupId is not None and len(self.chatGroupId2username.get(groupId)) > 1:
+        if groupId is not None and len(self.chatGroupId2username.get(groupId)) > 0:
             message = {
-                "timestamp":datetime.datetime.now().strftime("%m-%d %H:%M"),
+                "timestamp":datetime.datetime.now().strftime("%m-%d %H:%M:%S"),
                 "username": username,
                 "avatar_id": user.avatar_id,
                 "message": message

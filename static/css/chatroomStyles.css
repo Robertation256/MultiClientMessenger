@@ -55,7 +55,22 @@
 	background-color: white;
 	border-radius: 10px;
 	border-color: green;
-	display: none;
+	border-style: none;
+	display: flex;
+}
+
+.AvatarImg {
+	width: 30px;
+	height: 30px;
+	border-color: lightyellow;
+	border-style: solid;
+	border-radius: 5px;
+	float: left;
+}
+
+.UserEntryName {
+	width: 60%;
+	float: left;
 }
 
 .DivChat {
@@ -65,8 +80,30 @@
 	width: 55%;
 	height: 70%;
 	color: black;
+	border-style: inset;
 	border-radius: 10px;
 	background-color: lightblue;
+}
+
+.DivChatInMsg {
+	left: 5%;
+	align-self: baseline;
+	color: black;
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 10px;
+	background-color: white;
+	display: inline-block;
+}
+
+.DivChatOutMsg {
+	align-self: baseline;
+	color: black;
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 10px;
+	background-color: white;
+	display: inline-block;
 }
 
 .DivSend {
