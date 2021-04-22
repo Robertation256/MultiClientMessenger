@@ -6,7 +6,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var REFRESH_INTERVAL = 5000;  // time between two AutoRefreshes
+  var REFRESH_INTERVAL = 2000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
@@ -53,6 +53,7 @@ setTimeout(function(){  // wait a while after page is loaded
         if (data_returned["status"] == 1) {
           my_status = "ONLINE";
           showAlert("Auto connect success!");
+          console.log("connectOnLoad data:", data_returned);
           $("#connect-btn").hide(500);
           $("#refresh-btn").show(500);
           startAutoRefresh();
@@ -78,14 +79,15 @@ setTimeout(function(){  // wait a while after page is loaded
       success: function(data_refreshed) {
         my_status = "ONLINE";
         data = JSON.parse(decryptByDES(data_refreshed, secret));
+        curr_group = data["my_chat_group_id"];
         refreshDivUsers(data["out_group_users"], data["in_group_users"]);
-        refreshDivChat(data);
+        refreshDivChat(data["chat_messages"]);
         console.log("refreshed success");
         refresh_failure_count = 0;
       },
       error: function() {
-        // console.log("refresh failed");
-        showAlert("Page refresh failed!");
+        console.log("refresh failed");
+        // showAlert("Page refresh failed!");
         refresh_failure_count += 1;
        if (refresh_failure_count > 5) {
          my_status = "OFFLINE";
@@ -148,7 +150,9 @@ setTimeout(function(){  // wait a while after page is loaded
             out_users[temp_user["username"]]["ingroup"] = "FALSE";
             temp_id = 'divUser' + temp_user["username"];
             temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
-                        '<text>' + temp_user["username"] + '</text>' + 
+                        '<img src="/static?file_name=' + temp_user["avatar_id"] + 
+                        '.jpg" class="AvatarImg">' + 
+                        '<text class="UserEntryName>' + temp_user["username"] + '</text>' + 
                         '</div>';
             $("#divUsers").prepend(temp_html);
             $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
@@ -164,7 +168,9 @@ setTimeout(function(){  // wait a while after page is loaded
           };
           temp_id = 'divUser' + temp_user["username"];
           temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
-                      '<text>' + temp_user["username"] + '</text>' + 
+                      '<img src="/static?file_name=' + temp_user["avatar_id"] + 
+                      '.jpg" class="AvatarImg">' + 
+                      '<text class="UserEntryName">' + temp_user["username"] + '</text>' + 
                       '</div>';
           $("#divUsers").prepend(temp_html);
           $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
@@ -180,9 +186,12 @@ setTimeout(function(){  // wait a while after page is loaded
             out_users[temp_user["username"]]["ingroup"] = "TRUE";
             temp_id = 'divUser' + temp_user["username"];
             temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
-                        '<text>' + temp_user["username"] + 'TOGETHER' + '</text>' + 
+                        '<img src="/static?file_name=' + temp_user["avatar_id"] + 
+                        '.jpg" class="AvatarImg">' + 
+                        '<text class="UserEntryName>' + temp_user["username"] + '</text>' + 
                         '</div>';
             $("#divUsers").prepend(temp_html);
+            $("#"+temp_id).css("border-style", "inset").css("background-color", "lightgrey");
             $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
           }
         }
@@ -196,9 +205,12 @@ setTimeout(function(){  // wait a while after page is loaded
           };
           temp_id = 'divUser' + temp_user["username"];
           temp_html = '<div class="DivUserEntry" id="' + temp_id + '">' + 
-                      '<text>' + temp_user["username"] + 'TOGETHER' + '</text>' + 
+                      '<img src="/static?file_name=' + temp_user["avatar_id"] + 
+                      '.jpg" class="AvatarImg">' + 
+                      '<text class="UserEntryName>' + temp_user["username"] + '</text>' + 
                       '</div>';
           $("#divUsers").prepend(temp_html);
+          $("#"+temp_id).css("border-style", "inset").css("background-color", "lightgrey");
           $("#"+temp_id).show(500).fadeOut(100).fadeIn(100);
         }
       }
@@ -250,8 +262,8 @@ setTimeout(function(){  // wait a while after page is loaded
 
   }
 
-  function refreshDivChat(data_refreshed) {
-    console.log("refreshed data:", data_refreshed);
+  function refreshDivChat(chat_messages) {
+    console.log(chat_messages);
   }
 
   function startAutoRefresh() {  // automatically refresh page
@@ -315,6 +327,10 @@ setTimeout(function(){  // wait a while after page is loaded
   $("#refresh-btn").on("click", function() {
     showAlert("Starting AutoRefresh!");
     startAutoRefresh();
+  });
+
+  $("#send-btn").on("click", function() {
+    
   });
 
   connectOnLoad();  // the start of everything

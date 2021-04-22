@@ -56,7 +56,22 @@
 	border-radius: 10px;
 	border-color: green;
 	border-style: none;
+	display: flex;
 	display: none;
+}
+
+.AvatarImg {
+	width: 30px;
+	height: 30px;
+	border-color: lightyellow;
+	border-style: solid;
+	border-radius: 5px;
+	float: left;
+}
+
+.UserEntryName {
+	width: 60%;
+	float: left;
 }
 
 .DivChat {
