@@ -1,11 +1,8 @@
 from common.templates.Response import Response
 from common.templates.Request import Request
 from dto.User import User
-from utils.RSACrypto import RSACrypto
-from utils.DESCrypto import DESCrypto
 import threading
 import time
-import uuid
 from config import *
 
 class ShortConnectionHandler():
@@ -20,15 +17,15 @@ class ShortConnectionHandler():
         self.longConnectionHandler = longConnectionHandler
         self.chatGroupId2username = chatGroupId2username
         self.username2chatGroupId = username2chatGroupId
-        self.RSACrypto = RSACrypto()
         self.mapping = {
             "GET/login" : self._handle_get_login,
             "POST/login": self._handle_post_login,
             "GET/chatroom": self._handle_get_chatroom,
             "GET/static": self._handle_get_static,
-            "POST/connect": self._handle_establish_long_connection,
-            "GET/favicon.ico": self._handle_get_favicon
+            "GET/favicon.ico": self._handle_get_favicon,
         }
+
+
 
     def _handle_get_login(self,request,conn):
         responseTemplate = Response()
@@ -109,63 +106,20 @@ class ShortConnectionHandler():
             print(f"[File not found] {file_name}")
             self._handle_default(request,conn)
 
-    def _handle_establish_long_connection(self,request,conn):
-        username = request.getSession()
-
-        # deny long connection if user is not logged-in
-        if username is None or username not in self.loggedInUsers:
-            self._handle_default(request,conn)
-            return
-
-        # deny long connection if the secret is not properly encrypted by the public key
-        secret = None
-        response = Response()
-        try:
-            encrypted_secret = request.data.get("secret")
-            secret = self.RSACrypto.decrypt(encrypted_secret)
-            assert (len(secret) == 16 or len(secret) == 24)
-        except:
-            response.data = {
-                "status":0,
-                "msg":"Secret exchange failed. Connection not established."
-            }
-            response.sendAjax(conn)
-            return
-
-        crypto = DESCrypto(secret)
-        test_string = request.data.get("test_msg")
-        if test_string is not None:
-            decrypted_test_string = crypto.decrypt(test_string)
-        else:
-            decrypted_test_string = ""
-
-        user = self.loggedInUsers[username]
-        if user.first_time_request:
-            user.first_time_request = False
-            user.lastContactTime = time.time()
-            user.crypto = crypto
-            chatGroupId = str(uuid.uuid4())
-            self.chatGroupId2username[chatGroupId] = [username]
-            self.username2chatGroupId[username] = chatGroupId
-
-            user.conn = conn
-            thread = threading.Thread(target=self.longConnectionHandler.handle,args=(user,))
-            thread.start()
-            response.data = {
-                "status":1,
-                "msg":"connection established",
-                "decrypted_test_msg": decrypted_test_string
-            }
-            response.headers["Connection"] = "Keep-Alive"
-            response.sendAjax(conn)
-            return "Don't close"
-        else:
-            self._handle_default(request,conn)
 
     def _handle_default(self,request,conn):
-        rt = Response()
-        rt.data = "404 not found"
-        rt.send404(conn)
+        username = request.getSession()
+        if username in self.loggedInUsers:
+            self.longConnectionHandler.handle(request,conn)
+        else:
+            rt = Response()
+            rt.headers["Connection"] = "Keep-Alive"
+            rt.data = "404 not found"
+            rt.send404(conn)
+
+
+
+
 
     def dispatch(self,conn,request):
         path = request.path
@@ -199,7 +153,8 @@ class ShortConnectionHandler():
             if len(data) > 0:
                 request = Request.getRequest(data)
                 print(f"[Short Connection] method: {request.method}; path: {request.path}")
-                self.dispatch(current_conn,request)
+                thread = threading.Thread(target=self.dispatch, args=(current_conn, request,))
+                thread.start()
                 current_conn = None
 
 

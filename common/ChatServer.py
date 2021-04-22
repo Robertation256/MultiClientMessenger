@@ -1,5 +1,5 @@
 from common.handlers.ShortConnectionHandler import ShortConnectionHandler
-from common.handlers.LongConnectionHandler import LongConnectionHandler
+from common.handlers.LoggedInUserHandler import LoggedInUserHandler
 from common.templates.Response import Response
 from config import *
 import socket
@@ -22,7 +22,7 @@ class ChatServer():
         self.socket.setblocking(False)
         self.connectionQueue = Queue(maxsize=100)
         # self.loggedInUserThreads = dict()
-        self.longConnectionHandler = LongConnectionHandler(
+        self.longConnectionHandler = LoggedInUserHandler(
             self.loggedInUsers,
             self.chatGroupId2username,
             self.username2chatGroupId,

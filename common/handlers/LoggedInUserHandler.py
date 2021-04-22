@@ -1,12 +1,14 @@
-from common.templates.Request import Request
 from common.templates.Response import Response
-from config import *
 import time
+import uuid
 import datetime
 import json
+from utils.RSACrypto import RSACrypto
+from utils.DESCrypto import DESCrypto
 
 
-class LongConnectionHandler:
+
+class LoggedInUserHandler:
 
     def __init__(self,
                  loggedInUsers,
@@ -22,14 +24,65 @@ class LongConnectionHandler:
             "GET/refresh": self._handle_refresh,
             "GET/join": self._handle_join,
             "GET/send_message": self._handle_send_message,
-            "GET/login": self._handle_get_login,
-            "POST/connect": self._handle_post_connect,
-            "GET/chatroom": self._handle_get_chatroom,
-            "GET/static": self._handle_get_static
+            "POST/connect": self._handle_establish_long_connection,
+
         }
+        self.RSACrypto = RSACrypto()
 
 
-    def _logout(self,user):
+    def _handle_establish_long_connection(self,request,conn):
+        username = request.getSession()
+
+        # deny long connection if user is not logged-in
+        if username is None or username not in self.loggedInUsers:
+            self._handle_default(request,conn)
+            return
+
+        # deny long connection if the secret is not properly encrypted by the public key
+        secret = None
+        response = Response()
+        try:
+            encrypted_secret = request.data.get("secret")
+            secret = self.RSACrypto.decrypt(encrypted_secret)
+            assert (len(secret) == 16 or len(secret) == 24)
+        except:
+            response.data = {
+                "status":0,
+                "msg":"Secret exchange failed. Connection not established."
+            }
+            response.sendAjax(conn)
+            return
+
+        crypto = DESCrypto(secret)
+        test_string = request.data.get("test_msg")
+        if test_string is not None:
+            decrypted_test_string = crypto.decrypt(test_string)
+        else:
+            decrypted_test_string = ""
+
+        user = self.loggedInUsers[username]
+        if user.first_time_request:
+            user.first_time_request = False
+            user.lastContactTime = time.time()
+            user.crypto = crypto
+            chatGroupId = str(uuid.uuid4())
+            self.chatGroupId2username[chatGroupId] = [username]
+            self.username2chatGroupId[username] = chatGroupId
+
+            response.data = {
+                "status":1,
+                "msg":"connection established",
+                "decrypted_test_msg": decrypted_test_string
+            }
+            response.sendAjax(conn)
+        else:
+            self._handle_default(request,conn)
+
+
+    def _logout(self,request,conn):
+        username = request.getSession()
+        user = self.loggedInUsers[username]
+
         self.loggedInUsers.pop(user.name)
         groupId = self.username2chatGroupId[user.name]
         group_members = self.chatGroupId2username[groupId]
@@ -39,90 +92,27 @@ class LongConnectionHandler:
         else:
             self.chatGroupId2username.remove(user.name)
 
-    def dispatch(self, request, user):
+    def dispatch(self, request, conn):
         path = request.path
         method = request.method
         handlingFunc = self.mapping.get(method + path)
         if handlingFunc is None:
-            self._handle_default(request, user)
+            self._handle_default(request, conn)
         else:
-            handlingFunc(request, user)
+            handlingFunc(request, conn)
 
-    def _handle_default(self,request,user):
+    def _handle_default(self,request,conn):
         rt = Response()
         rt.headers["Connection"] = "Keep-Alive"
         rt.data = "404 not found"
-        rt.send404(user.conn)
+        rt.send404(conn)
 
-    def _handle_get_static(self,request,user):
-
-        params = request.params
-        if "file_name" not in params:
-            self._handle_default(request,user)
-
-        file_name = params.get("file_name")
-        try:
-            response = Response()
-            response.headers["Connection"] = "Keep-Alive"
-            file_type = file_name.split(".")[1]
-            if file_type == "js":
-                with open(STATIC_FILE_PATH+"/js/"+file_name,"r") as fp:
-                    file = fp.read()
-                response.data = file
-                response.sendJS(user.conn)
-
-            elif file_type == "css":
-                with open(STATIC_FILE_PATH+"/css/"+file_name,"r") as fp:
-                    file = fp.read()
-                response.data = file
-                response.sendCSS(user.conn)
-
-            elif file_type in ["jpg",'png','jpeg']:
-                with open(STATIC_FILE_PATH + "/image/" + file_name, "rb") as fp:
-                    file = fp.read()
-                response.data = file
-                response.sendImage(user.conn,file_type)
-            else:
-                self._handle_default(request,user)
-        except:
-            print(f"[File not found] {file_name}")
-            self._handle_default(request,user)
-
-    def _handle_get_chatroom(self,request,user):
-        user.lastContactTime = time.time()
-        with open(TEMPLATE_PATH+"\\chatroom.html","r") as fp:
-            data = fp.read()
-        response = Response()
-        response.headers["Connection"] = "Keep-Alive"
-        response.data = data
-        response.sendHTML(user.conn)
-
-    def _handle_post_connect(self,request,user):
-        user.lastContactTime = time.time()
-        response = Response()
-        response.data = {
-            "status":1,
-            "msg": "Already connected"
-        }
-        response.headers["Connection"] = "Keep-Alive"
-        response.sendAjax(user.conn)
-
-    def _handle_get_login(self,request,user):
-        responseTemplate = Response()
-        responseTemplate.headers["Connection"] = "Keep-Alive"
-        if request.getSession() != None:
-            responseTemplate.setSession("")
-        with open(TEMPLATE_PATH + "/loginPage.html", "r", encoding="UTF-8") as fp:
-            data = fp.read()
-        responseTemplate.data = data
-        responseTemplate.sendHTML(user.conn)
-        self._logout(user)
-        user.conn.close()
-        return "logout"
-
-    def _handle_refresh(self,request,user):
+    def _handle_refresh(self,request,conn):
+        username = request.getSession()
+        user = self.loggedInUsers[username]
         user.lastContactTime = time.time()
         username = request.getSession()
+        print(f"refresh request from     user: {username} ")
         if username not in self.username2chatGroupId:
             self._handle_default(request,user)
             return
@@ -162,11 +152,14 @@ class LongConnectionHandler:
         response = Response()
         response.data = encrypted_result
         response.headers["Connection"] = "Keep-Alive"
-        response.sendAjax(user.conn)
+        response.sendAjax(conn)
 
-    def _handle_join(self,request,user):
+    def _handle_join(self,request,conn):
+        username = request.getSession()
+        user= self.loggedInUsers[username]
         user.lastContactTime = time.time()
         username = request.getSession()
+        print(f"Join request from user {username}")
         targetGroupId = request.params.get("group_id")
         response = Response()
         response.headers["Connection"] = "Keep-Alive"
@@ -175,7 +168,7 @@ class LongConnectionHandler:
                 "status":0,
                 "msg":"Group id does not exist."
             }
-            response.sendAjax(user.conn)
+            response.sendAjax(conn)
             return
 
         originalGroupId = self.username2chatGroupId[username]
@@ -184,7 +177,7 @@ class LongConnectionHandler:
                 "status": 0,
                 "msg": "You are already in this group chat."
             }
-            response.sendAjax(user.conn)
+            response.sendAjax(conn)
             return
 
         self.chatGroupId2username[originalGroupId].remove(username)
@@ -199,10 +192,12 @@ class LongConnectionHandler:
             "status": 1,
             "msg": "Join succeeds."
         }
-        response.sendAjax(user.conn)
+        response.sendAjax(conn)
 
 
-    def _handle_send_message(self,request,user):
+    def _handle_send_message(self,request,conn):
+        username = request.getSession()
+        user = self.loggedInUsers[username]
         response = Response()
         response.headers["Connection"] = "Keep-Alive"
         user.lastContactTime = time.time()
@@ -216,7 +211,7 @@ class LongConnectionHandler:
                 "status":0,
                 "msg": "message send failed. Bad message."
             }
-            response.sendAjax(user.conn)
+            response.sendAjax(conn)
             return
 
 
@@ -237,35 +232,39 @@ class LongConnectionHandler:
                 "status": 1,
                 "msg": "message send succeeds"
             }
-            response.sendAjax(user.conn)
+            response.sendAjax(conn)
             return
 
         response.data = {
             "status": 0,
             "msg": "message send failed. Bad group id"
         }
-        response.sendAjax(user.conn)
+        response.sendAjax(conn)
 
 
-    def handle(self,user):
-        while True:
-            try:
-                data = user.conn.recv(1024)
-            except BlockingIOError as e:
-                data = ""
+    def handle(self,request,conn):
+        self.dispatch(request,conn)
+        conn.close()
 
-            except OSError:
-                print("[Long Connection] Connection with user {%s} is down."%user.name)
-                break
 
-            if len(data) > 0:
-                request = Request.getRequest(data)
-                print(f"[Long connection] user: {user.name}; method: {request.method}; path: {request.path}")
-                res = self.dispatch(request,user)
-                if res == "logout":
-                    break
-            else:
-                time.sleep(LONG_CONNECTION_SLEEP_CYCLE)
+        # while True:
+        #     try:
+        #         data = user.conn.recv(1024)
+        #     except BlockingIOError as e:
+        #         data = ""
+        #
+        #     except OSError:
+        #         print("[Long Connection] Connection with user {%s} is down."%user.name)
+        #         break
+        #
+        #     if len(data) > 0:
+        #         request = Request.getRequest(data)
+        #         #print(f"[Long connection] user: {user.name}; method: {request.method}; path: {request.path}")
+        #         res = self.dispatch(request,user)
+        #         if res == "logout":
+        #             break
+        #     else:
+        #         time.sleep(LONG_CONNECTION_SLEEP_CYCLE)
 
 
 

@@ -1,5 +1,7 @@
 $(function() {
 setTimeout(function(){  // wait a while after page is loaded
+  autoRefresh = false;
+
   var secret = "zxcvbnm,./;lkjhg";
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
@@ -71,6 +73,7 @@ setTimeout(function(){  // wait a while after page is loaded
   function refreshPage() {
     $.ajax({
       url: "/refresh",
+      timeout: 3000,
       type: "get",
       success: function(data_refreshed) {
         my_status = "ONLINE";
@@ -84,15 +87,18 @@ setTimeout(function(){  // wait a while after page is loaded
         console.log("refresh failed");
         showAlert("Page refresh failed!");
         refresh_failure_count += 1;
-        if (refresh_failure_count > 2) {
-          my_status = "OFFLINE";
-          // alert("Page refresh failed " + 
-          //   refresh_failure_count.toString() + 
-          //   " times in a row. AutoRefresh disabled.");
-          stopAutoRefresh();
-        }
+//        if (refresh_failure_count > 2) {
+//          my_status = "OFFLINE";
+//          // alert("Page refresh failed " +
+//          //   refresh_failure_count.toString() +
+//          //   " times in a row. AutoRefresh disabled.");
+//          stopAutoRefresh();
+//        }
       }
     });
+    if (autoRefresh){
+        setTimeout(refreshPage, 2000);
+        }
   }
 
   function refreshDivUsers(refreshed_users) {
@@ -152,24 +158,27 @@ setTimeout(function(){  // wait a while after page is loaded
   }
 
   function startAutoRefresh() {  // automatically refresh page
-    if (!refresh_id) {  // AutoRefresh off
-      refresh_id = setInterval(function() {
-        refreshPage();
-      }, REFRESH_INTERVAL);
-    }
-    else {  // AutoRefresh already on
-      stopAutoRefresh();
-      refresh_id = setInterval(function() {
-        refreshPage();
-      }, REFRESH_INTERVAL);
-    }
+    autoRefresh = true;
+    refreshPage();
+//    if (!refresh_id) {  // AutoRefresh off
+//      refresh_id = setInterval(function() {
+//        refreshPage();
+//      }, REFRESH_INTERVAL);
+//    }
+//    else {  // AutoRefresh already on
+//      stopAutoRefresh();
+//      refresh_id = setInterval(function() {
+//        refreshPage();
+//      }, REFRESH_INTERVAL);
+//    }
   }
 
   function stopAutoRefresh() {
-    if (refresh_id) {
-      clearInterval(refresh_id);
-      refresh_id = null;
-    }
+    autoRefresh = false;
+//    if (refresh_id) {
+//      clearInterval(refresh_id);
+//      refresh_id = null;
+//    }
   }
 
   $(document).on("click", ".DivUserEntry", function(){
@@ -188,7 +197,6 @@ setTimeout(function(){  // wait a while after page is loaded
           console.log("server joining", user_tojoin, "success");
           my_status = "INGROUP";
           curr_group = groupid_tojoin;
-          refreshPage();  // this function updates everything on page
         }
         else {
           showAlert("Failed to join " + user_tojoin + "!");
