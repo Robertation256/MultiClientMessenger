@@ -65,8 +65,31 @@
 	width: 55%;
 	height: 70%;
 	color: black;
+	border-style: inset;
 	border-radius: 10px;
 	background-color: lightblue;
+}
+
+.DivChatInMsg {
+	position: relative;
+	margin-left: 5%;
+	color: black;
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 10px;
+	background-color: white;
+	display: inline-block;
+}
+
+.DivChatOutMsg {
+	position: relative;
+	margin-right: 5%;
+	color: black;
+	border-style: solid;
+	border-width: 1px;
+	border-radius: 10px;
+	background-color: white;
+	display: inline-block;
 }
 
 .DivSend {
