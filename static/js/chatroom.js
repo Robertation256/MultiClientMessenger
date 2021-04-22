@@ -6,7 +6,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var REFRESH_INTERVAL = 2000;  // time between two AutoRefreshes
+  var REFRESH_INTERVAL = 3000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
@@ -101,57 +101,60 @@ setTimeout(function(){  // wait a while after page is loaded
         }
   }
 
-  function refreshDivUsers(refreshed_out_users, refershed_in_users) {
+  function refreshDivUsers(refreshed_out_users, refreshed_in_users) {
     var i;
     var temp_user;
     var refreshed_out_usernames = [];
     var refreshed_in_usernames = [];
     var temp_id;
     var temp_html;
-    // to add into html
-    for (i=0; i<refreshed_out_users.length; i++) {
-      temp_user = refreshed_out_users[i];
-      refreshed_out_usernames.push(temp_user["username"]);
-      if (out_users[temp_user["username"]]) {  // already in cache
-        if (out_users[temp_user["username"]]["status"] != "ONLINE") {
-          out_users[temp_user["username"]]["status"] = "ONLINE";
-          temp_id = 'divUser' + temp_user["username"];
-          temp_html = '<div class="DivUserEntry" id="' + temp_id + 
-                      '">' + 
-                      '<text>' + temp_user["username"] + '</text>' + 
-                      '</div>';
-          $("#divUsers").prepend(temp_html);
-          $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
-        }
-      }
-      else {  // new to cache
-        out_users[temp_user["username"]] = {
-          "username": temp_user["username"],
-          "avatar_id": temp_user["avatar_id"],
-          "chat_group_id": temp_user["chat_group_id"],
-          "status": "ONLINE",
-        };
-        temp_id = 'divUser' + temp_user["username"];
-        temp_html = '<div class="DivUserEntry" id="' + temp_id + 
-                    '">' + 
-                    '<text>' + temp_user["username"] + '</text>' + 
-                    '</div>';
-        $("#divUsers").prepend(temp_html);
-        $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
-      }
-    }
-    // to remove from html
-    for (i in out_users) {
-      temp_user = out_users[i];
-      if (!refreshed_out_usernames.includes(temp_user["username"])) {  // not curr online
-        out_users[i]["status"] = "OFFLINE";
-        temp_id = 'divUser' + temp_user["username"];
-        if ($("#"+temp_id)) {  // if html on page
-          $("#"+temp_id).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100).hide(500);
-          $("#"+temp_id).remove();
-        }
-      }
-    }
+    // to add into html, for out_group_users
+    
+    // for (i=0; i<refreshed_out_users.length; i++) {
+    //   temp_user = refreshed_out_users[i];
+    //   refreshed_out_usernames.push(temp_user["username"]);
+    //   if (out_users[temp_user["username"]]) {  // already in cache
+    //     out_users[temp_user["username"]]["chat_group_id"] = temp_user["chat_group_id"];
+    //     if (out_users[temp_user["username"]]["status"] != "ONLINE") {
+    //       out_users[temp_user["username"]]["status"] = "ONLINE";
+    //       temp_id = 'divUser' + temp_user["username"];
+    //       temp_html = '<div class="DivUserEntry" id="' + temp_id + 
+    //                   '">' + 
+    //                   '<text>' + temp_user["username"] + '</text>' + 
+    //                   '</div>';
+    //       $("#divUsers").prepend(temp_html);
+    //       $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+    //     }
+    //   }
+    //   else {  // new to cache
+    //     out_users[temp_user["username"]] = {
+    //       "username": temp_user["username"],
+    //       "avatar_id": temp_user["avatar_id"],
+    //       "chat_group_id": temp_user["chat_group_id"],
+    //       "status": "ONLINE",
+    //     };
+    //     temp_id = 'divUser' + temp_user["username"];
+    //     temp_html = '<div class="DivUserEntry" id="' + temp_id + 
+    //                 '">' + 
+    //                 '<text>' + temp_user["username"] + '</text>' + 
+    //                 '</div>';
+    //     $("#divUsers").prepend(temp_html);
+    //     $("#"+temp_id).show(500).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+    //   }
+    // }
+    // // to remove from html
+    // for (i in out_users) {
+    //   temp_user = out_users[i];
+    //   if (!refreshed_out_usernames.includes(temp_user["username"])) {  // not curr online
+    //     out_users[i]["status"] = "OFFLINE";
+    //     temp_id = 'divUser' + temp_user["username"];
+    //     if ($("#"+temp_id)) {  // if html on page
+    //       $("#"+temp_id).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100).hide(500);
+    //       $("#"+temp_id).remove();
+    //     }
+    //   }
+    // }
+
   }
 
   function refreshDivChat(data_refreshed) {
