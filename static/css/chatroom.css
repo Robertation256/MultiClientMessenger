@@ -1,4 +1,21 @@
-.container{max-width:1170px; margin:auto;height:100%;}
+body {
+    height:100%;
+    background-color:#05728F !important;
+}
+
+.container{
+ margin:auto;
+ height:550px;
+ -webkit-border-radius: 10px 10px 10px 10px;
+  border-radius: 10px 10px 10px 10px;
+  background: #fff;
+  padding: 30px;
+  -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
+  box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
+  align-items:center;
+}
+
+
 img{ max-width:100%;}
 .inbox_people {
   background: #f8f8f8 none repeat scroll 0 0;
@@ -57,7 +74,7 @@ img{ max-width:100%;}
   margin: 0;
   padding: 18px 16px 10px;
 }
-.inbox_chat { height: 550px; overflow-y: scroll;}
+.inbox_chat { height: 450px; overflow-y: scroll;}
 
 .active_chat{ background:#ebebeb;}
 
@@ -109,6 +126,8 @@ img{ max-width:100%;}
   font-size: 15px;
   min-height: 48px;
   width: 100%;
+  outline:none !important;
+
 }
 
 .type_msg {border-top: 1px solid #c4c4c4;position: relative;}
@@ -124,9 +143,9 @@ img{ max-width:100%;}
   right: 0;
   top: 11px;
   width: 33px;
-}
-.messaging { padding: 0 0 50px 0;}
+  outline:none !important;
 
+}
 
 
 .mesgs {
@@ -140,5 +159,30 @@ img{ max-width:100%;}
   height: 400px;;
   width: 100%;
   overflow-y: auto;
+}
+
+#message_arrow {
+    outline:none !important;
+    height:100%;
+    width:100%;
+    font-weight:700;
+    margin-top:4px;
+    margin-right:3px;
+}
+
+.chatroom-title {
+    position:absolute;
+    right:550px;
+    color:white;
+    font-weight:600;
+
+}
+
+#logout-btn {
+    position:absolute;
+    right:100px;
+    color:white !important;
+    font-weight:1000!important;
+
 }
 

@@ -73,6 +73,7 @@ class ShortConnectionHandler():
     def _handle_get_chatroom(self,request,conn):
         with open(TEMPLATE_PATH+"/chatroom.html","r") as fp:
             data = fp.read()
+
         data = data%PUBLIC_KEY
         response = Response()
         response.data = data

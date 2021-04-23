@@ -3,28 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <title>Chatroom</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
-    <link rel="stylesheet" href="/static?file_name=chatroomStyles.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="/static?file_name=chatroom.css">
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+</head>
+<body>
     <script src="https://code.jquery.com/jquery.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jsencrypt/3.1.0/jsencrypt.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
-    <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="/static?file_name=chatroom.js"></script>
-</head>
-<body>
+
 
 <!--This tag is for storing public key and is not displayed. Don't remove it-->
 <textarea id="pubkey" rows="15" cols="65" style="display:none">%s</textarea><br/>
-<i class="material-icons" id="logout-btn">
-logout
-</i>
-<div id="divAlert"></div>
-<div class="container">
+    <div class="top-line" style="height:50px; display:flex;align-items:center;">
+        <div id="divAlert"></div>
 
-<h3 class=" text-center">Messaging</h3>
+        <h3 class="chatroom-title">Rogue Chat</h3>
+        <span class="material-icons" id="logout-btn">logout</span>
+
+    </div>
+
+
+
+    <div class="container">
 
   <div class="messaging">
 
@@ -61,7 +64,7 @@ logout
             <div class="type_msg">
               <div class="input_msg_write">
                 <input type="text" class="write_msg" id="inputMessageBlah" placeholder="Type a message" >
-                <button class="msg_send_btn" type="button"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                <button class="msg_send_btn" type="button"><span class="material-icons" id="message_arrow">arrow_right_alt</span></button>
               </div>
             </div>
 
