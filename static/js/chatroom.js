@@ -6,7 +6,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
-  var REFRESH_INTERVAL = 2000;  // time between two AutoRefreshes
+  var REFRESH_INTERVAL = 1000;  // time between two AutoRefreshes
   var refresh_id = null;
   var refresh_failure_count = 0;  // stop AutoRefresh when this large
 
@@ -17,6 +17,9 @@ setTimeout(function(){  // wait a while after page is loaded
   var in_users = {};
   var latest_timestamp = "00-00 00:00:00";
   var BASE_TIMESTAMP = "00-00 00:00:00";
+
+  var max_message_bubble_letter_length = 25;
+
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
@@ -56,16 +59,13 @@ setTimeout(function(){  // wait a while after page is loaded
         console.log("connectOnLoad status:", data_returned["status"]);
         if (data_returned["status"] == 1) {
           my_status = "ONLINE";
-          showAlert("Auto connect success!");
+          showAlert("Encrypted channel established");
           console.log("connectOnLoad data:", data_returned);
-          $("#connect-btn").hide(500);
-          $("#refresh-btn").show(500);
           startAutoRefresh();
         }
         else {
           my_status = "OFFLINE";
-          showAlert("Auto connect failed! Please manually connect.");
-          $("#connect-btn").show(500);
+          showAlert("Connection failed");
         }
         return data_returned["status"];
       },
@@ -78,7 +78,7 @@ setTimeout(function(){  // wait a while after page is loaded
   function refreshPage() {
     $.ajax({
       url: "/refresh",
-      timeout: 2000,
+      timeout: 1000,
       type: "get",
       success: function(data_refreshed) {
         my_status = "ONLINE";
@@ -163,29 +163,36 @@ setTimeout(function(){  // wait a while after page is loaded
     for (i=0; i<chat_messages.length; i++) {
       curr_msg = chat_messages[i];
       // new message
+      var msg_bubble_length = curr_msg.message.length;
+      if (msg_bubble_length > max_message_bubble_letter_length){
+        msg_bubble_length = max_message_bubble_letter_length;
+      }
+      msg_bubble_length = msg_bubble_length*8+20;
+      var msg_bubble_height = Math.ceil(curr_msg.message.length/max_message_bubble_letter_length);
+      msg_bubble_height = msg_bubble_height*9 + (msg_bubble_height-1)*6+20;
       if (curr_msg["timestamp"] > latest_timestamp) {
         latest_timestamp = curr_msg["timestamp"];
         if (curr_msg["username"] != my_username) {  // incoming msg
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
-          temp_html = '<div class="incoming_msg" id="'+ temp_id +'">' + 
+          temp_html = '<div class="incoming_msg" style="display:flex;min-height:35px;"id="'+ temp_id +'">' +
                       '<div class="incoming_msg_img"> '+
                       '<img src="/static?file_name='+ curr_msg["avatar_id"] +
                       '.jpg" alt="sunil"> '+
-                      '</div><div class="received_msg">'+
+                      '</div><div class="received_msg" style="postion:absolute;left:5px;">'+
                       '<div class="received_withd_msg">'+
-                      '<p>'+curr_msg["message"]+
+                      '<p style="float:left;word-wrap:break-word;height:'+msg_bubble_height+'px; width:'+ msg_bubble_length+'px;">'+curr_msg["message"]+
                       '</p>'+
-                      '<span class="time_date">'+curr_msg["timestamp"]+'</span>'+
-                      '</div></div></div>';
+                      '</div></div>'+
+                       '<span class="time_date" style="float:left;">'+curr_msg["timestamp"]+'</span>'+
+                      '</div>';
           $("#allMessages").append(temp_html);
         }
         else {
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
           temp_html = '<div class="outgoing_msg" id="'+ temp_id +'">'+
                       '<div class="sent_msg">'+
-                      '<p>'+curr_msg["message"]
-                      '</p>'+
-                      '<span class="time_date">'+ curr_msg["timestamp"] +'</span>'+
+                      '<p style="float:right;word-wrap:break-word;height:'+msg_bubble_height+'px; width:'+ msg_bubble_length+'px;">'+curr_msg["message"]+'</p><br/>'+
+                      '<span class="time_date" style="float:right;">'+ curr_msg["timestamp"] +'</span>'+
                       '</div></div>';
           $("#allMessages").append(temp_html);
         }
@@ -211,6 +218,8 @@ setTimeout(function(){  // wait a while after page is loaded
     if (groupid_tojoin == curr_group) {  // already in this group, do nothing
       return;
     }
+    $("#allMessages").children().remove();  //Remove messages in previous group chat
+
     $.ajax({
       url: "/join?group_id="+groupid_tojoin,
       type: "get",
@@ -232,21 +241,23 @@ setTimeout(function(){  // wait a while after page is loaded
     });
   });
 
-  $("#connect-btn").on("click", function() {
-    showAlert("Starting Connection!");
-    connectOnLoad();
-  });
-
-  $("#refresh-btn").on("click", function() {
-    showAlert("Starting AutoRefresh!");
-    startAutoRefresh();
+  $(document).on("keypress", function(event) {
+  // Number 13 is the "Enter" key on the keyboard
+  if (event.which === 13) {
+    // Cancel the default action, if needed
+    event.preventDefault();
+    // Trigger the button element with a click
+    $(".msg_send_btn").click();
+    }
   });
 
   $(".msg_send_btn").on("click", function() {
     var msg = $("#inputMessageBlah").val();
+    $("#inputMessageBlah").attr("disabled","disabled");
     console.log("sendingmessage:", msg);
     $("#inputMessageBlah").val("");
     if (msg == "") {  // nothing to send
+      $("#inputMessageBlah").removeAttr("disabled");
       return;
     }
     msg = encryptByDES(msg, secret);
@@ -259,28 +270,37 @@ setTimeout(function(){  // wait a while after page is loaded
       success: function(send_result) {
         if (send_result["status"] == 1) {
           // refreshPage();
-          return;
         }
         else {
           console.log("send message failed");
           showAlert("Sending message failed!");
         }
+        $("#inputMessageBlah").removeAttr("disabled");
+
       },
+      error: function(){
+        $("#inputMessageBlah").removeAttr("disabled");
+      }
     });
+
   });
+
+  $(window).on("beforeunload", function() {
+    $("#logout-btn").click();
+});
 
   $("#logout-btn").on("click", function() {
     $.ajax({
-      url: "/logout",
+      url: "/log_out",
       type: "post",
       success: function(logout_result) {
         if (logout_result["status"] == 1) {
           console.log("logout success");
-          window.location.replace("/login");
+          window.location.href = "/login";
         }
         else {
           console.log("logout denied");
-          showAlert("Logout request denied!");
+          showAlert("Logout failed");
         }
       },
       error: function() {

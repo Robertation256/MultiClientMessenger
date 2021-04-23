@@ -65,7 +65,7 @@ class ChatServer():
         while True:
             killSet = []
             for username, user in self.loggedInUsers.items():
-                if not user.isAlive() and user.conn is not None:
+                if not user.isAlive():
                     killSet.append(username)
 
             for username in killSet:
@@ -75,9 +75,8 @@ class ChatServer():
 
                     # thread = self.loggedInUserThreads.pop(username)
                     # self.killThread(thread)
-                    conn = self.loggedInUsers.pop(username).conn
+                    self.longConnectionHandler._logout(username)
                     print(f"[Long Connection]: Connection timeout with user {username}\n----------closing connection-----------")
-                    conn.close()
 
             time.sleep(DEAD_CLIENT_KILL_CYCLE)
 

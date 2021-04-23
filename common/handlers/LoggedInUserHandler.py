@@ -27,7 +27,7 @@ class LoggedInUserHandler:
             "GET/join": self._handle_join,
             "POST/send_message": self._handle_send_message,
             "POST/connect": self._handle_establish_long_connection,
-
+            "POST/log_out": self._handle_log_out
         }
         self.RSACrypto = RSACrypto()
 
@@ -80,10 +80,26 @@ class LoggedInUserHandler:
         else:
             self._handle_default(request,conn)
 
-
-    def _logout(self,request,conn):
+    def _handle_log_out(self,request,conn):
         username = request.getSession()
-        user = self.loggedInUsers[username]
+        response = Response()
+        logged_out = self._logout(username)
+        if logged_out:
+            response.data = {
+                "status": 1,
+                "msg": "Log out succeeds"
+            }
+        else:
+            response.data = {
+                "status": 0,
+                "msg": "User does not exist"
+            }
+        response.sendAjax(conn)
+
+    def _logout(self,username):
+        user = self.loggedInUsers.get(username)
+        if user is None:
+            return False
 
         self.loggedInUsers.pop(user.name)
         groupId = self.username2chatGroupId[user.name]
@@ -93,6 +109,9 @@ class LoggedInUserHandler:
             self.chatGroupId2username.pop(groupId)
         else:
             self.chatGroupId2username.remove(user.name)
+
+        return True
+
 
     def dispatch(self, request, conn):
         path = request.path
@@ -111,7 +130,9 @@ class LoggedInUserHandler:
 
     def _handle_refresh(self,request,conn):
         username = request.getSession()
-        user = self.loggedInUsers[username]
+        user = self.loggedInUsers.get(username)
+        if user is None:
+            return
         user.lastContactTime = time.time()
         username = request.getSession()
         if username not in self.username2chatGroupId:

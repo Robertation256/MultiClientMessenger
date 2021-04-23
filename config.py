@@ -51,7 +51,7 @@ DEAD_CLIENT_KILL_CYCLE = 10
 
 
 #---------------Timeout-----------------
-USER_TIMEOUT = 300
+USER_TIMEOUT = 5
 
 
 #---------------Refresh New Message Number-----------------
