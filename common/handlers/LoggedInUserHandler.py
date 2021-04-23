@@ -108,7 +108,10 @@ class LoggedInUserHandler:
         if len(group_members) <= 1:
             self.chatGroupId2username.pop(groupId)
         else:
-            self.chatGroupId2username.remove(user.name)
+            try:
+                del self.chatGroupId2username[user.name]
+            except:
+                pass
 
         return True
 
@@ -145,11 +148,14 @@ class LoggedInUserHandler:
         outGroupUserInfo = []
         for name in inGroupUserNames:
             if name != username:
-                user = self.loggedInUsers[name]
-                entry = dict()
-                entry["username"] = user.name
-                entry["avatar_id"] = user.avatar_id
-                inGroupUserInfo.append(entry)
+                try:
+                    user = self.loggedInUsers[name]
+                    entry = dict()
+                    entry["username"] = user.name
+                    entry["avatar_id"] = user.avatar_id
+                    inGroupUserInfo.append(entry)
+                except:
+                    pass
 
         for name, other_user in self.loggedInUsers.items():
             # user outside current chat group
