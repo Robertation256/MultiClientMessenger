@@ -46,11 +46,11 @@ class LoggedInUserHandler:
         original_group_id = self.username2chatGroupId.get(username)
         if original_group_id in self.chatGroupId2username:
             if len(self.chatGroupId2username[original_group_id])>1:
-                self.chatGroupId2username[original_group_id].pop(username)
+                self.chatGroupId2username[original_group_id].remove(username)
                 user.message_queue = Queue()
                 new_group_id = str(uuid.uuid4())
-                self.chatGroupId2username[new_group_id] = [user.name]
-                self.username2chatGroupId[user.name] = new_group_id
+                self.chatGroupId2username[new_group_id] = [username]
+                self.username2chatGroupId[username] = new_group_id
                 response.data = {
                     "status": 1,
                     "msg": "Join succeeds."
