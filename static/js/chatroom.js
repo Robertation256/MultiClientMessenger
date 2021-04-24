@@ -174,13 +174,15 @@ setTimeout(function(){  // wait a while after page is loaded
         latest_timestamp = curr_msg["timestamp"];
         if (curr_msg["username"] != my_username) {  // incoming msg
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
-          temp_html = '<div class="incoming_msg" style="display:flex;min-height:35px;"id="'+ temp_id +'">' +
+          temp_html = '<div class="incoming_msg" style="min-height:35px;"id="'+ temp_id +'">' +
+                      // above: display:flex;
                       '<div class="incoming_msg_img"> '+
                       '<img src="/static?file_name='+ curr_msg["avatar_id"] +
                       '.jpg" alt="sunil"> '+
-                      '</div><div class="received_msg" style="postion:absolute;left:5px;">'+
+                      '</div><div class="received_msg" >'+ // style="postion:absolute;left:5px;"
                       '<div class="received_withd_msg">'+
-                      '<p style="float:left;word-wrap:break-word;height:'+msg_bubble_height+'px; width:'+ msg_bubble_length+'px;">'+curr_msg["message"]+
+                      '<p style="word-wrap:break-word;height:'+msg_bubble_height+'px; width:'+ msg_bubble_length+'px;">'+curr_msg["message"]+
+                      // p style float:left;
                       '</p>'+
                       '</div></div>'+
                        '<span class="time_date" style="float:left;">'+curr_msg["timestamp"]+'</span>'+
