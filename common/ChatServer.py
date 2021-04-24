@@ -65,12 +65,13 @@ class ChatServer():
                 try:
                     data = current_conn.recv(2048)
                     request = Request.getRequest(data)
-                    self.thread_pool.submit(self.public_connection_handler.handle,current_conn,request)
-                    # thread = threading.Thread(target=self.dispatch, args=(current_conn, request,))
-                    # thread.start()
-                    print(f"method: {request.method}; path: {request.path}")
-                    current_conn = None
-                    blocked_start_time = time.time()
+                    if request is not None:
+                        self.thread_pool.submit(self.public_connection_handler.handle,current_conn,request)
+                        # thread = threading.Thread(target=self.dispatch, args=(current_conn, request,))
+                        # thread.start()
+                        print(f"method: {request.method}; path: {request.path}")
+                        current_conn = None
+                        blocked_start_time = time.time()
                 except BlockingIOError as e:
                     if time.time() - blocked_start_time > MAX_IO_BLOCK_TIME:
                         current_conn = None
