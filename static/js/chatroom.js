@@ -15,6 +15,7 @@ setTimeout(function(){  // wait a while after page is loaded
   var curr_group = 0;
   var out_users = {};
   var in_users = {};
+  var in_usernames = [];
   var latest_timestamp = "00-00 00:00:00";
   var BASE_TIMESTAMP = "00-00 00:00:00";
 
@@ -116,9 +117,14 @@ setTimeout(function(){  // wait a while after page is loaded
     var temp_id;
     var temp_html;
     
-    $("#listOfPeople").children().remove();
+    $("#listOfPeople").children().remove();  // just clear the list and restart
     for (i=0; i<refreshed_in_users.length; i++) {
       temp_user = refreshed_in_users[i];
+      refreshed_in_usernames.push(temp_user["username"]);
+      if (!in_usernames.includes(temp_user["username"])) {  // someone new to group
+        in_usernames.push(temp_user["username"]);
+        alertNewUser(temp_user["username"]);
+      }
       out_users[temp_user["username"]] = {
         "username": temp_user["username"],
         "chat_group_id": temp_user["chat_group_id"],
@@ -135,6 +141,13 @@ setTimeout(function(){  // wait a while after page is loaded
                   '<p></p>' +
                   '</div></div></div>';
       $("#listOfPeople").append(temp_html);
+    }
+    for (i=0; i<in_usernames.length; i++) {
+      if (!refreshed_in_usernames.includes(in_usernames[i])) {  // someone gone from group
+        alertGoneUser(in_usernames[i]);
+        var j = in_usernames.indexOf(in_usernames[i]);
+        in_usernames.splice(j, 1);
+      }
     }
     for (i=0; i<refreshed_out_users.length; i++) {
       temp_user = refreshed_out_users[i];
@@ -206,6 +219,28 @@ setTimeout(function(){  // wait a while after page is loaded
     }
   }
 
+  function alertNewUser(username) {
+    var width = username.length + 8;
+    width = width.toString() + "em";
+    var temp_html = '<div class="sys_chat_msg">'+
+                    '<p class="p_sys_msg" style="width:'+width+';">'+
+                    username + " has joined"+
+                    '</p>'+
+                    '</div>';
+    $("#allMessages").append(temp_html);
+  }
+
+  function alertGoneUser(username) {
+    var width = username.length + 8;
+    width = width.toString() + "em";
+    var temp_html = '<div class="sys_chat_msg">'+
+                    '<p class="p_sys_msg" style="width:'+width+';">'+
+                    username + " has left"+
+                    '</p>'+
+                    '</div>';
+    $("#allMessages").append(temp_html);
+  }
+
   function startAutoRefresh() {  // automatically refresh page
     autoRefresh = true;
     refreshPage();
@@ -232,6 +267,8 @@ setTimeout(function(){  // wait a while after page is loaded
           my_status = "INGROUP";
           curr_group = groupid_tojoin;
           latest_msg_timestamp = BASE_TIMESTAMP;
+          $("#unjoin-btn").show(500);
+          showAlert("Joining group success!");
         }
         else {
           showAlert("Failed to join " + user_tojoin + "!");
@@ -245,20 +282,44 @@ setTimeout(function(){  // wait a while after page is loaded
     });
   });
 
+  $("#unjoin-btn").on("click", function() {
+    $.ajax({
+      url: "/unjoin",
+      type: "get",
+      success: function(unjoin_result) {
+        if (unjoin_result["status"] == 1) {
+          my_status = "ONLINE";
+          curr_group = unjoin_result["chat_group_id"];
+          $("#allMessages").children().remove();
+          console.log("unjoin success");
+          showAlert("You are now out of the group!");
+        }
+        else {
+          console.log("server unjoin failed");
+          showAlert("Unable to exit group!");
+        }
+      },
+      error: function() {
+        console.log("ajax unjoin failed");
+        showAlert("Unable to exit group!");
+      }
+    });
+  });
+
   $(document).on("keypress", function(event) {
   // Number 13 is the "Enter" key on the keyboard
-  if (event.which === 13) {
-    // Cancel the default action, if needed
-    event.preventDefault();
-    // Trigger the button element with a click
-    $(".msg_send_btn").click();
+    if (event.which === 13) {
+      // Cancel the default action, if needed
+      event.preventDefault();
+      // Trigger the button element with a click
+      $(".msg_send_btn").click();
     }
   });
 
   $(".msg_send_btn").on("click", function() {
     var msg = $("#inputMessageBlah").val();
     $("#inputMessageBlah").attr("disabled","disabled");
-    console.log("sendingmessage:", msg);
+    // console.log("sendingmessage:", msg);
     $("#inputMessageBlah").val("");
     if (msg == "") {  // nothing to send
       $("#inputMessageBlah").removeAttr("disabled");
