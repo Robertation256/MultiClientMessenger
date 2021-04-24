@@ -179,7 +179,7 @@ setTimeout(function(){  // wait a while after page is loaded
 
       var p_maxwidth = curr_msg["message"].length;
       if (p_maxwidth < 10) {
-        p_maxwidth = p_maxwidth.toString() + "em";
+        p_maxwidth = (p_maxwidth+3).toString() + "em";
       }
       else {
         p_maxwidth = "25em";
@@ -205,12 +205,20 @@ setTimeout(function(){  // wait a while after page is loaded
         }
         else {
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
+          // temp_html = '<div class="outgoing_msg" id="'+ temp_id +'">'+
+          //             '<div class="sent_msg">'+
+          //             '<p style="float:right;word-wrap:break-word;max-width:'+p_maxwidth+';">'+
+          //             curr_msg["message"]+'</p><br/>'+
+          //             '<span class="time_date" style="float:right;">'+ curr_msg["timestamp"] +'</span>'+
+          //             '</div></div>';
           temp_html = '<div class="outgoing_msg" id="'+ temp_id +'">'+
                       '<div class="sent_msg">'+
-                      '<p style="float:right;word-wrap:break-word;max-width:'+p_maxwidth+';">'+
+                      '<p style="word-wrap:break-word;max-width:'+p_maxwidth+';">'+
                       curr_msg["message"]+'</p><br/>'+
-                      '<span class="time_date" style="float:right;">'+ curr_msg["timestamp"] +'</span>'+
-                      '</div></div>';
+                      '</div><span class="time_date" style="display:block;">'+ curr_msg["timestamp"] +'</span>'+
+                      '<div class="clear"></div>'+ // more </div> front of this line, from before timestamp
+                      '</div>';
+
           $("#allMessages").append(temp_html);
         }
         document.getElementById("allMessages").scrollTop = 
