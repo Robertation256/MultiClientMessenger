@@ -163,37 +163,38 @@ setTimeout(function(){  // wait a while after page is loaded
     for (i=0; i<chat_messages.length; i++) {
       curr_msg = chat_messages[i];
       // new message
-      var msg_bubble_length = curr_msg.message.length;
-      if (msg_bubble_length > max_message_bubble_letter_length){
-        msg_bubble_length = max_message_bubble_letter_length;
+
+      var p_maxwidth = curr_msg["message"].length;
+      if (p_maxwidth < 10) {
+        p_maxwidth = p_maxwidth.toString() + "em";
       }
-      msg_bubble_length = msg_bubble_length*8+20;
-      var msg_bubble_height = Math.ceil(curr_msg.message.length/max_message_bubble_letter_length);
-      msg_bubble_height = msg_bubble_height*9 + (msg_bubble_height-1)*6+20;
+      else {
+        p_maxwidth = "25em";
+      }
       if (curr_msg["timestamp"] > latest_timestamp) {
         latest_timestamp = curr_msg["timestamp"];
         if (curr_msg["username"] != my_username) {  // incoming msg
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
           temp_html = '<div class="incoming_msg" style="min-height:35px;"id="'+ temp_id +'">' +
-                      // above: display:flex;
                       '<div class="incoming_msg_img"> '+
                       '<img src="/static?file_name='+ curr_msg["avatar_id"] +
-                      '.jpg" alt="sunil"> '+
-                      '</div><div class="received_msg" >'+ // style="postion:absolute;left:5px;"
+                      '.jpg" alt="sunil">'+
+                      '</div><div style="display:inline-block;">'+
+                      '<div class="received_msg" >'+ // style="postion:absolute;left:5px;"
                       '<div class="received_withd_msg">'+
-                      '<p style="word-wrap:break-word;height:'+msg_bubble_height+'px; width:'+ msg_bubble_length+'px;">'+curr_msg["message"]+
-                      // p style float:left;
-                      '</p>'+
-                      '</div></div>'+
-                       '<span class="time_date" style="float:left;">'+curr_msg["timestamp"]+'</span>'+
-                      '</div>';
+                      '<p style="word-wrap:break-word;max-width:'+ p_maxwidth +';">'+
+                      curr_msg["message"]+
+                      '</p></div></div>'+
+                      '<span class="time_date" style="float:left;">'+curr_msg["timestamp"]+'</span>'+
+                      '</div></div>';
           $("#allMessages").append(temp_html);
         }
         else {
           temp_id = curr_msg["timestamp"] + curr_msg["username"];
           temp_html = '<div class="outgoing_msg" id="'+ temp_id +'">'+
                       '<div class="sent_msg">'+
-                      '<p style="float:right;word-wrap:break-word;height:'+msg_bubble_height+'px; width:'+ msg_bubble_length+'px;">'+curr_msg["message"]+'</p><br/>'+
+                      '<p style="float:right;word-wrap:break-word;max-width:'+p_maxwidth+';">'+
+                      curr_msg["message"]+'</p><br/>'+
                       '<span class="time_date" style="float:right;">'+ curr_msg["timestamp"] +'</span>'+
                       '</div></div>';
           $("#allMessages").append(temp_html);
