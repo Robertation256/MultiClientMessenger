@@ -126,7 +126,7 @@ img{ max-width:100%;}
   /* below added by robert */
   /*position: absolute;*/
   /*left: 5px;*/
-  border: solid red;
+  /*border: solid red;*/
  }
 
 .received_withd_msg p {
@@ -252,7 +252,7 @@ img{ max-width:100%;}
     cursor:pointer;
 }
 
-#logout-btn {
+#unjoin-btn {
     color:black !important;
     font-weight:800 !important;
     cursor:pointer;
