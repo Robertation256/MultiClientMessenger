@@ -138,19 +138,16 @@ class LoggedInUserHandler:
         try:
             self.loggedInUsers.pop(user.name)
             groupId = self.username2chatGroupId[user.name]
+            del self.username2chatGroupId[username]
+
             group_members = self.chatGroupId2username[groupId]
-            self.username2chatGroupId.pop(user.name)
-        except:
+            if len(group_members) <= 1:
+                del self.chatGroupId2username[groupId]
+            else:
+                self.chatGroupId2username[groupId].remove(username)
+        except Exception as e:
+            print(f"[ERROR {e}]")
             return False
-
-
-        if len(group_members) <= 1:
-            self.chatGroupId2username.pop(groupId)
-        else:
-            try:
-                del self.chatGroupId2username[user.name]
-            except:
-                pass
 
         return True
 
