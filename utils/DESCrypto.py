@@ -18,8 +18,7 @@ class DESCrypto:
         try:
             byteArray = base64.b64decode(base64_string)
             return self._crypto.decrypt(byteArray).decode()
-        except:
-            return None
-
+        except Exception as e:
+            print(e)
 
 

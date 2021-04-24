@@ -63,7 +63,7 @@ class ChatServer():
             else:
 
                 try:
-                    data = current_conn.recv(1024)
+                    data = current_conn.recv(2048)
                     request = Request.getRequest(data)
                     self.thread_pool.submit(self.public_connection_handler.handle,current_conn,request)
                     # thread = threading.Thread(target=self.dispatch, args=(current_conn, request,))

@@ -222,6 +222,7 @@ class LoggedInUserHandler:
         user.lastContactTime = time.time()
         username = request.getSession()
         groupId = self.username2chatGroupId.get(username)
+
         try:
             message = request.data["message"]
             message = user.crypto.decrypt(message)
@@ -232,6 +233,9 @@ class LoggedInUserHandler:
             }
             response.sendAjax(conn)
             return
+
+
+        print(f"[received message] {message}")
 
 
         # todo: this part right now is nasty, add more error handling later
@@ -245,8 +249,11 @@ class LoggedInUserHandler:
             if groupId in self.chatGroupId2username:
                 usernames = self.chatGroupId2username[groupId]
                 for username1 in usernames:
-                    user_ins = self.loggedInUsers[username1]
-                    user_ins.message_queue.put(message)
+                    try:
+                        user_ins = self.loggedInUsers[username1]
+                        user_ins.message_queue.put(message)
+                    except:
+                        pass
 
             response.data = {
                 "status": 1,
