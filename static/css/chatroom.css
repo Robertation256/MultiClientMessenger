@@ -6,6 +6,7 @@ body {
 .container{
  margin:auto;
  height:550px;
+ /*height: 700px;*/
  -webkit-border-radius: 10px 10px 10px 10px;
   border-radius: 10px 10px 10px 10px;
   background: #fff;
@@ -238,7 +239,8 @@ img{ max-width:100%;}
 
 .chatroom-title {
     position:absolute;
-    right:550px;
+    /*right:550px;*/
+    left: 45%;
     color:white;
     font-weight:600;
 
