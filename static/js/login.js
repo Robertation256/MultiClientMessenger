@@ -20,8 +20,18 @@ $(window).load(function(){
                 }
             }
         });
-        
     })
+
+
+    $(document).on("keypress", function(event) {
+        // Number 13 is the "Enter" key on the keyboard
+        if (event.which === 13) {
+        // Cancel the default action, if needed
+        event.preventDefault();
+        // Trigger the button element with a click
+        $("#login-btn").click();
+        }
+        });
 
 });
 

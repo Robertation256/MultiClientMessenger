@@ -144,6 +144,7 @@ img{ max-width:100%;}
 }
 
 .type_msg {border-top: 1px solid #c4c4c4;position: relative;}
+
 .msg_send_btn {
   background: #05728f none repeat scroll 0 0;
   border: medium none;
@@ -205,5 +206,13 @@ img{ max-width:100%;}
     left:100px;
     color:white !important;
     font-weight:500!important;
+}
+
+#inputMessageBlah {
+    border: None !important;
+    outline: None !important;
+    width:90%;
+    height:90%;
+    overflow:hidden;
 }
 
