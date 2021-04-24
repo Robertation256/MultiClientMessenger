@@ -1,0 +1,2 @@
+The application needs requirements pyDes==2.0.1, uuid==1.30, rsa==4.7.2, which can be installed using pip or on Anaconda.
+After installing the requirements, use python3 to run app.py in the root folder to run the application.

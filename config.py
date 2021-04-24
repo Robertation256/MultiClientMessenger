@@ -1,7 +1,7 @@
 import os
 
 #---------------Server Socket-----------------
-PORT_NUMBER = 5000
+PORT_NUMBER = 4999
 IP_ADDRESS = "localhost"
 
 
