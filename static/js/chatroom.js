@@ -143,7 +143,7 @@ setTimeout(function(){  // wait a while after page is loaded
       $("#listOfPeople").append(temp_html);
     }
     for (i=0; i<in_usernames.length; i++) {
-      if (!refreshed_in_usernames.includes(in_usernames[i])) {  // someone gone from group
+      if (!refreshed_in_usernames.includes(in_usernames[i])) {  // someone left group
         alertGoneUser(in_usernames[i]);
         var j = in_usernames.indexOf(in_usernames[i]);
         in_usernames.splice(j, 1);
@@ -268,6 +268,7 @@ setTimeout(function(){  // wait a while after page is loaded
           curr_group = groupid_tojoin;
           latest_msg_timestamp = BASE_TIMESTAMP;
           $("#unjoin-btn").show(500);
+          in_usernames = [];
           showAlert("Joining group success!");
         }
         else {
@@ -291,6 +292,7 @@ setTimeout(function(){  // wait a while after page is loaded
           my_status = "ONLINE";
           curr_group = unjoin_result["chat_group_id"];
           $("#allMessages").children().remove();
+          $("#unjoin-btn").hide(500);
           console.log("unjoin success");
           showAlert("You are now out of the group!");
         }

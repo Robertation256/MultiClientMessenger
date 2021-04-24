@@ -94,7 +94,9 @@ img{ max-width:100%;}
 }
 
 .p_sys_msg {
-  float:center;
+  /*float:center;*/
+  margin-left: auto;
+  margin-right: auto;
   text-align: center;
   font-size:10px;
   font-color:white;
@@ -226,12 +228,19 @@ img{ max-width:100%;}
     color:white !important;
     font-weight:1000!important;
     cursor:pointer;
+}
 
+#logout-btn {
+    color:black !important;
+    font-weight:800 !important;
+    cursor:pointer;
+    display: none;
 }
 
 #divAlert {
     position:absolute;
     left:100px;
+    top: 80%;  /*added by owen*/
     color:white !important;
     font-weight:500!important;
 }
