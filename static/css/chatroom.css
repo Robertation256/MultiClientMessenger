@@ -265,8 +265,11 @@ img{ max-width:100%;}
     position:absolute;
     left:100px;
     top: 80%;  /*added by owen*/
-    color:white !important;
-    font-weight:500!important;
+    color:black !important;
+    font-weight:600 !important;
+    padding: 10px;
+    border-radius: 10px;
+    background-color: white;
 }
 
 #inputMessageBlah {

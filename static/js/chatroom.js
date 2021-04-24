@@ -1,8 +1,11 @@
 $(function() {
 setTimeout(function(){  // wait a while after page is loaded
   autoRefresh = false;
-
-  var secret = "zxcvbnm,./;lkjhg";
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  // var secret = "zxcvbnm,./;lkjhg";
+  var secret = "XtJXHRNSuoTwrLKR";
+  // var secret = generateSecret(16);
+  // console.log("secret key is", secret, secret.length.toString());
   var publicKey = $("#pubkey").val();
   var RSAcrypto = new JSEncrypt();
   RSAcrypto.setPublicKey(publicKey);
@@ -21,6 +24,14 @@ setTimeout(function(){  // wait a while after page is loaded
 
   var max_message_bubble_letter_length = 25;
 
+  function generateSecret(secret_len) {
+    var result = "";
+    var len = characters.length;
+    for (var i=0; i<secret_len; i++) {
+      result += characters.charAt(Math.floor(Math.random()*len));
+    }
+    return result;
+  }
 
   function showAlert(str) {
     document.getElementById("divAlert").innerHTML = str;
@@ -57,20 +68,24 @@ setTimeout(function(){  // wait a while after page is loaded
         "test_msg": test_msg_enc,
       },
       success: function(data_returned) {
-        console.log("connectOnLoad status:", data_returned["status"]);
+        // console.log("connectOnLoad status:", data_returned["status"]);
         if (data_returned["status"] == 1) {
           my_status = "ONLINE";
-          showAlert("Encrypted channel established");
-          console.log("connectOnLoad data:", data_returned);
+          setTimeout(function() {
+            showAlert("Encrypted channel established!");
+          }, 500);
+          // console.log("connectOnLoad data:", data_returned);
           startAutoRefresh();
         }
         else {
           my_status = "OFFLINE";
+          console.log("server connectOnLoad error");
           showAlert("Connection failed");
         }
         return data_returned["status"];
       },
       error: function() {
+        console.log("ajax connectOnLoad error");
         return 0;
       },
     });
@@ -83,6 +98,9 @@ setTimeout(function(){  // wait a while after page is loaded
       type: "get",
       success: function(data_refreshed) {
         my_status = "ONLINE";
+        console.log("raw data sent from server:", data_refreshed);
+        // console.log("secret here is", secret);
+        // console.log("data refreshed dec is", decryptByDES(data_refreshed, secret));
         data = JSON.parse(decryptByDES(data_refreshed, secret));
         my_username = data["username"];
         curr_group = data["my_chat_group_id"];
@@ -92,7 +110,7 @@ setTimeout(function(){  // wait a while after page is loaded
         refresh_failure_count = 0;
       },
       error: function() {
-        console.log("refresh failed");
+        // console.log("refresh failed");
         // showAlert("Page refresh failed!");
         refresh_failure_count += 1;
        if (refresh_failure_count > 5) {
@@ -301,7 +319,7 @@ setTimeout(function(){  // wait a while after page is loaded
           curr_group = unjoin_result["chat_group_id"];
           $("#allMessages").children().remove();
           $("#unjoin-btn").hide(500);
-          console.log("unjoin success");
+          // console.log("unjoin success");
           showAlert("You are now out of the group!");
         }
         else {
