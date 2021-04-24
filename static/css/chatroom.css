@@ -88,18 +88,15 @@ img{ max-width:100%;}
     border: solid;
 }
 .incoming_msg_img {
+  position: relative;
   display: inline-block;
+  vertical-align: top;
   width: 6%;
-  height: 100%;
-  border: solid;
 }
 .received_msg {
-  /*display: inline-block;*/
   padding: 0 0 0 10px;
-  /*vertical-align: top;*/
   align-content: left;
   width: 100%;
-  border: solid;
   /*max-width: 50%;*/
   /* below added by robert */
   /*position: absolute;*/

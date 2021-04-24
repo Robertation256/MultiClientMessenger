@@ -179,7 +179,8 @@ setTimeout(function(){  // wait a while after page is loaded
                       '<div class="incoming_msg_img"> '+
                       '<img src="/static?file_name='+ curr_msg["avatar_id"] +
                       '.jpg" alt="sunil">'+
-                      '</div><div style="display:inline-block;">'+
+                      '</div>'+
+                      '<div style="display:inline-block;height:100%;">'+
                       '<div class="received_msg" >'+ // style="postion:absolute;left:5px;"
                       '<div class="received_withd_msg">'+
                       '<p style="word-wrap:break-word;max-width:'+ p_maxwidth +';">'+
