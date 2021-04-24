@@ -23,11 +23,47 @@ class LoggedInUserHandler:
         self.mapping = {
             "GET/refresh": self._handle_refresh,
             "GET/join": self._handle_join,
+            "GET/unjoin": self._handle_unjoin,
             "POST/send_message": self._handle_send_message,
             "POST/connect": self._handle_establish_long_connection,
             "POST/log_out": self._handle_log_out
         }
         self.RSACrypto = RSACrypto()
+
+    def _handle_unjoin(self,request,conn):
+        username = request.getSession()
+        user = self.loggedInUsers.get(username)
+        response = Response()
+        if user is None:
+            response.data = {
+                "status": 0,
+                "msg": "Please log in first"
+            }
+            response.sendAjax(conn)
+            return
+
+        user.lastContactTime = time.time()
+        original_group_id = self.username2chatGroupId.get(username)
+        if original_group_id in self.chatGroupId2username:
+            if len(self.chatGroupId2username[original_group_id])>1:
+                self.chatGroupId2username[original_group_id].pop(username)
+                user.message_queue = Queue()
+                new_group_id = str(uuid.uuid4())
+                self.chatGroupId2username[new_group_id] = [user.name]
+                self.username2chatGroupId[user.name] = new_group_id
+                response.data = {
+                    "status": 1,
+                    "msg": "Join succeeds."
+                }
+                response.sendAjax(conn)
+                return
+
+        response.data = {
+            "status": 0,
+            "msg": "Unjoin failed."
+        }
+        response.sendAjax(conn)
+
 
 
     def _handle_establish_long_connection(self,request,conn):
