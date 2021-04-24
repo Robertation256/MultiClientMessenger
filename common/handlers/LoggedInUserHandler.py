@@ -16,12 +16,10 @@ class LoggedInUserHandler:
                  loggedInUsers,
                  chatGroupId2username,
                  username2chatGroupId,
-                 history_message
     ):
         self.loggedInUsers = loggedInUsers
         self.chatGroupId2username = chatGroupId2username
         self.username2chatGroupId = username2chatGroupId
-        self.history_message = history_message
         self.mapping = {
             "GET/refresh": self._handle_refresh,
             "GET/join": self._handle_join,
@@ -37,7 +35,7 @@ class LoggedInUserHandler:
 
         # deny long connection if user is not logged-in
         if username is None or username not in self.loggedInUsers:
-            self._handle_default(request,conn)
+            self._handle_resource_not_found(request,conn)
             return
 
         # deny long connection if the secret is not properly encrypted by the public key
@@ -78,7 +76,7 @@ class LoggedInUserHandler:
             }
             response.sendAjax(conn)
         else:
-            self._handle_default(request,conn)
+            self._handle_resource_not_found(request,conn)
 
     def _handle_log_out(self,request,conn):
         username = request.getSession()
@@ -101,10 +99,15 @@ class LoggedInUserHandler:
         if user is None:
             return False
 
-        self.loggedInUsers.pop(user.name)
-        groupId = self.username2chatGroupId[user.name]
-        group_members = self.chatGroupId2username[groupId]
-        self.username2chatGroupId.pop(user.name)
+        try:
+            self.loggedInUsers.pop(user.name)
+            groupId = self.username2chatGroupId[user.name]
+            group_members = self.chatGroupId2username[groupId]
+            self.username2chatGroupId.pop(user.name)
+        except:
+            return False
+
+
         if len(group_members) <= 1:
             self.chatGroupId2username.pop(groupId)
         else:
@@ -116,21 +119,6 @@ class LoggedInUserHandler:
         return True
 
 
-    def dispatch(self, request, conn):
-        path = request.path
-        method = request.method
-        handlingFunc = self.mapping.get(method + path)
-        if handlingFunc is None:
-            self._handle_default(request, conn)
-        else:
-            handlingFunc(request, conn)
-
-    def _handle_default(self,request,conn):
-        rt = Response()
-        rt.headers["Connection"] = "Keep-Alive"
-        rt.data = "404 not found"
-        rt.send404(conn)
-
     def _handle_refresh(self,request,conn):
         username = request.getSession()
         user = self.loggedInUsers.get(username)
@@ -139,7 +127,7 @@ class LoggedInUserHandler:
         user.lastContactTime = time.time()
         username = request.getSession()
         if username not in self.username2chatGroupId:
-            self._handle_default(request,user)
+            self._handle_resource_not_found(request,user)
             return
 
         chatGroupId = self.username2chatGroupId[username]
@@ -185,7 +173,6 @@ class LoggedInUserHandler:
         encrypted_result = user.crypto.encrypt(json_string)
         response = Response()
         response.data = encrypted_result
-        response.headers["Connection"] = "Keep-Alive"
         response.sendAjax(conn)
 
     def _handle_join(self,request,conn):
@@ -196,7 +183,6 @@ class LoggedInUserHandler:
         print(f"Join request from user {username}")
         targetGroupId = request.params.get("group_id")
         response = Response()
-        response.headers["Connection"] = "Keep-Alive"
         if targetGroupId is None or targetGroupId not in self.chatGroupId2username:
             response.data = {
                 "status":0,
@@ -216,9 +202,8 @@ class LoggedInUserHandler:
 
         self.chatGroupId2username[originalGroupId].remove(username)
         if len(self.chatGroupId2username[originalGroupId]) < 1:
-            self.chatGroupId2username.pop(originalGroupId)
-            if originalGroupId in self.history_message:
-                self.history_message.pop(originalGroupId)
+            del self.chatGroupId2username[originalGroupId]
+
         self.chatGroupId2username[targetGroupId].append(username)
         self.username2chatGroupId[username] = targetGroupId
         user.message_queue = Queue()
@@ -234,7 +219,6 @@ class LoggedInUserHandler:
         username = request.getSession()
         user = self.loggedInUsers[username]
         response = Response()
-        response.headers["Connection"] = "Keep-Alive"
         user.lastContactTime = time.time()
         username = request.getSession()
         groupId = self.username2chatGroupId.get(username)
@@ -277,30 +261,24 @@ class LoggedInUserHandler:
         }
         response.sendAjax(conn)
 
+    def _handle_resource_not_found(self,request,conn):
+        rt = Response()
+        rt.data = "404 not found"
+        rt.send404(conn)
 
-    def handle(self,request,conn):
-        self.dispatch(request,conn)
+    def handle(self, conn, request):
+        path = request.path
+        method = request.method
+        handler = self.mapping.get(method + path)
+
+        if handler is None:
+            self._handle_resource_not_found(request, conn)
+        else:
+            handler(request, conn)
+
         conn.close()
 
 
-        # while True:
-        #     try:
-        #         data = user.conn.recv(1024)
-        #     except BlockingIOError as e:
-        #         data = ""
-        #
-        #     except OSError:
-        #         print("[Long Connection] Connection with user {%s} is down."%user.name)
-        #         break
-        #
-        #     if len(data) > 0:
-        #         request = Request.getRequest(data)
-        #         #print(f"[Long connection] user: {user.name}; method: {request.method}; path: {request.path}")
-        #         res = self.dispatch(request,user)
-        #         if res == "logout":
-        #             break
-        #     else:
-        #         time.sleep(LONG_CONNECTION_SLEEP_CYCLE)
 
 
 

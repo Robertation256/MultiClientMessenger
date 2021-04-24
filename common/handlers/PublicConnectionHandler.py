@@ -1,20 +1,17 @@
 from common.templates.Response import Response
-from common.templates.Request import Request
 from dto.User import User
-import threading
-import time
 from config import *
 
-class ShortConnectionHandler():
+class PublicConnectionHandler():
     def __init__(
             self,
             loggedInUser,
-            longConnectionHandler,
+            loggedInUserHandler,
             chatGroupId2username,
             username2chatGroupId
     ):
         self.loggedInUsers = loggedInUser
-        self.longConnectionHandler = longConnectionHandler
+        self.logged_in_user_handler = loggedInUserHandler
         self.chatGroupId2username = chatGroupId2username
         self.username2chatGroupId = username2chatGroupId
         self.mapping = {
@@ -89,7 +86,7 @@ class ShortConnectionHandler():
     def _handle_get_static(self,request,conn):
         params = request.params
         if "file_name" not in params:
-            self._handle_default(request,conn)
+            self._handle_resource_not_found(request,conn)
 
         file_name = params.get("file_name")
         try:
@@ -115,63 +112,34 @@ class ShortConnectionHandler():
                 response.data = file
                 response.sendImage(conn,file_type)
             else:
-                self._handle_default(request,conn)
+                self._handle_resource_not_found(request,conn)
         except:
             print(f"[File not found] {file_name}")
-            self._handle_default(request,conn)
+            self._handle_resource_not_found(request,conn)
 
 
-    def _handle_default(self,request,conn):
-        username = request.getSession()
-        if username in self.loggedInUsers:
-            self.longConnectionHandler.handle(request,conn)
-        else:
-            rt = Response()
-            rt.headers["Connection"] = "Keep-Alive"
-            rt.data = "404 not found"
-            rt.send404(conn)
+    def _handle_resource_not_found(self,request,conn):
+        rt = Response()
+        rt.data = "404 not found"
+        rt.send404(conn)
 
 
 
-
-
-    def dispatch(self,conn,request):
+    def handle(self,conn,request):
         path = request.path
         method = request.method
-        handlingFunc = self.mapping.get(method+path)
+        handler = self.mapping.get(method+path)
 
-        if handlingFunc is None:
-            res = self._handle_default(request,conn)
-        else:
-            res = handlingFunc(request,conn)
-
-        if res != "Don't close":
+        if handler is not None:
+            handler(request,conn)
             conn.close()
-
-    def handle(self,connection_queue):
-
-        current_conn = None
-        while True:
-            if current_conn == None:
-                if not connection_queue.empty():
-                    current_conn = connection_queue.get()
-                else:
-                    time.sleep(SHORT_CONNECTION_SLEEP_CYCLE)
-                    continue
-
-            try:
-                data = current_conn.recv(1024)
-            except BlockingIOError as e:
-                data = ""
-
-            if len(data) > 0:
-                request = Request.getRequest(data)
-                print(f"[Short Connection] method: {request.method}; path: {request.path}")
-                thread = threading.Thread(target=self.dispatch, args=(current_conn, request,))
-                thread.start()
-                current_conn = None
-
-
+        else:
+            username = request.getSession()
+            if username is not None and username in self.loggedInUsers:
+                self.logged_in_user_handler.handle(conn,request)
+            else:
+                self._handle_resource_not_found(request, conn)
+                conn.close()
 
 
 

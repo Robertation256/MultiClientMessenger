@@ -4,6 +4,12 @@ import os
 PORT_NUMBER = 5000
 IP_ADDRESS = "localhost"
 
+
+#---------------Server Infrastructure-----------------
+MAX_THREAD_POOL_SIZE = 5
+MAX_CONNECTION_QUEUE_SIZE=200
+
+
 #---------------Path-----------------
 ROOT = os.path.normpath(os.getcwd())
 TEMPLATE_PATH = ROOT+"/templates"
@@ -43,15 +49,13 @@ gwQco1KRMDSmXSMkDwIDAQAB
 
 
 
-#---------------Sleep Cycle-----------------
-CONNECTION_ACCEPT_SLEEP_CYCLE = 0.0001
-SHORT_CONNECTION_SLEEP_CYCLE = 0.0001
-LONG_CONNECTION_SLEEP_CYCLE = 0.0001
-DEAD_CLIENT_KILL_CYCLE = 10
+#---------------Timeout & Period-----------------
+CONNECTION_ACCEPT_SLEEP_TIME = 0.0001
+WAIT_FOR_CONNECTION_SLEEP_TIME = 0.0001
+DEAD_CLIENT_KILL_PERIOD = 10
+MAX_IO_BLOCK_TIME = 2
+USER_TIMEOUT = 30
 
-
-#---------------Timeout-----------------
-USER_TIMEOUT = 5
 
 
 #---------------Refresh New Message Number-----------------
