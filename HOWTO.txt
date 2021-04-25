@@ -1,2 +1,8 @@
-The application needs requirements pyDes==2.0.1, uuid==1.30, rsa==4.7.2, which can be installed using pip or on Anaconda.
-After installing the requirements, use python3 to run app.py in the root folder to run the application.
+To start the project:
+
+1. Make sure no other service is running on port 5000
+2. For Mac user, go to /MacOS/app and click on app.exe
+3. For Windows user, go to /Windows/app and click on app.exe
+4. visit 127.0.0.1:5000/login with your browser
+
+* Note: If you are in China, you may either need to use a VPN or change the CDN service in the HTML templates

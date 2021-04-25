@@ -11,9 +11,9 @@ MAX_CONNECTION_QUEUE_SIZE=200
 
 
 #---------------Path-----------------
-ROOT = os.path.normpath(os.getcwd())
-TEMPLATE_PATH = ROOT+"/templates"
-STATIC_FILE_PATH = ROOT + "/static"
+ROOT = os.getcwd()
+TEMPLATE_PATH = ROOT+"\\templates"
+STATIC_FILE_PATH = ROOT + "\\static"
 
 
 #---------------Secret Keys-----------------
